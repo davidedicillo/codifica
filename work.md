@@ -140,6 +140,11 @@
 
       In practice, Codifica is a small, opinionated standard for writing down work so it can be executed and audited using normal development workflows. When the files change, the project state changes—cleanly, transparently, and in a form that can be reviewed like any other contribution.
 
+      Note:
+      This copy was drafted before final site architecture was defined.
+      It should be considered provisional and may require restructuring
+      once SITE-003 is finalized.
+
   human_review: null
 
   state_transitions:
@@ -247,21 +252,32 @@
 
 
 - id: SITE-004
-  type: review
+  type: build
   state: todo
-  owner: human
-  title: Review and approve homepage content
+  owner: agent:writer
+  title: Rewrite site copy to align with final site architecture
 
   description: |
-    Review the drafted homepage copy for:
-    - clarity
-    - correctness
-    - tone
-    - alignment with Codifica philosophy
+    Rewrite the homepage copy from SITE-002 so that it maps cleanly
+    to the finalized single-page architecture defined in SITE-003.
 
-    This task represents explicit human judgment.
+    Goals:
+    - Align copy sections explicitly with:
+      - Overview
+      - Protocol
+      - Philosophy
+      - Examples
+    - Remove or relocate content that does not belong on the homepage
+    - Preserve protocol-first, non-marketing tone
 
-  derived_from: SITE-002
+  acceptance:
+    - Copy structure mirrors SITE-003 sections
+    - Clear 30-second understanding in the Overview section
+    - Protocol section is precise and non-promotional
+    - Philosophy and Examples are clearly separated
+
+
+  derived_from: SITE-003
 
   execution_notes: []
 
