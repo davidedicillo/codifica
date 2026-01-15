@@ -44,6 +44,17 @@ work.md
 
 That's it.
 
+## Starter template (v0.1)
+
+To use this template, copy these files into the root of your repository:
+
+- `codifica.json`
+- `codifica-spec.md`
+- `work.md`
+- `AGENTS.md`
+
+Then commit them and edit `work.md` to add your first real task.
+
 ---
 
 ## Files Explained

@@ -63,6 +63,38 @@ p { margin: 0.6rem 0; }
 ul { margin: 0.6rem 0; padding-left: 1.2rem; }
 li { margin: 0.25rem 0; }
 
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: rgba(138, 180, 255, 0.08);
+  text-decoration: none;
+  font-weight: 600;
+}
+.btn:hover {
+  text-decoration: none;
+  border-color: rgba(138, 180, 255, 0.28);
+  background: rgba(138, 180, 255, 0.12);
+}
+
 code, pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }

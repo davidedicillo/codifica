@@ -586,7 +586,7 @@
 
 - id: SITE-009
   type: build
-  state: todo
+  state: done
   owner: agent:builder
   title: Audit and remove unused static site files/pages
 
@@ -601,16 +601,41 @@
 
   derived_from: SITE-006
 
-  execution_notes: []
+  execution_notes:
+    - by: agent:builder
+      note: |
+        Removed unused pages after navigation changes:
+
+        - Deleted `work.html` and `codifica-spec.html`
+        - Verified there are no remaining references from `index.html`
+
+        Notes:
+        - Mentions of these pages remain in older task execution notes (historical record only).
+      timestamp: 2026-01-15T07:40:00Z
 
   human_review: null
 
-  state_transitions: []
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:builder
+      reason: Begin audit of static site pages for reachability and redundancy
+      timestamp: 2026-01-15T07:38:30Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:builder
+      reason: Removed unused pages and checked for references
+      timestamp: 2026-01-15T07:39:30Z
+    - from: to_be_tested
+      to: done
+      by: agent:builder
+      reason: Confirmed remaining pages are reachable/intentionally served and no links are broken
+      timestamp: 2026-01-15T07:40:00Z
 
 
 - id: SITE-010
   type: build
-  state: todo
+  state: done
   owner: agent:builder
   title: Publish starter templates to the GitHub distribution repo
 
@@ -628,16 +653,41 @@
 
   derived_from: SITE-007
 
-  execution_notes: []
+  execution_notes:
+    - by: agent:builder
+      note: |
+        Published `starter-templates/` to the distribution repo at:
+        - `https://github.com/davidedicillo/codifica/tree/main/starter-templates/v0.1`
+
+        Commit:
+        - `29b07a8` (Add starter templates (v0.1))
+
+        Also updated the site homepage “Starter templates” links to point directly to the published location.
+      timestamp: 2026-01-15T07:55:00Z
 
   human_review: null
 
-  state_transitions: []
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:builder
+      reason: Begin publishing starter-templates to distribution repo
+      timestamp: 2026-01-15T07:45:00Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:builder
+      reason: Added starter-templates/v0.1 to distribution repo and pushed to GitHub
+      timestamp: 2026-01-15T07:54:30Z
+    - from: to_be_tested
+      to: done
+      by: agent:builder
+      reason: Verified published files are reachable and homepage points to the published path
+      timestamp: 2026-01-15T07:55:00Z
 
 
 - id: SITE-011
   type: build
-  state: todo
+  state: done
   owner: agent:builder
   title: Make the “Starter templates” call-to-action more visible (without marketing tone)
 
@@ -652,11 +702,96 @@
 
   derived_from: SITE-007
 
-  execution_notes: []
+  execution_notes:
+    - by: agent:builder
+      note: |
+        Added an above-the-fold “Starter templates” CTA on the homepage:
+
+        - Minimal “card” block under the title
+        - Primary link points to the published templates location:
+          `https://github.com/davidedicillo/codifica/tree/main/starter-templates/v0.1`
+      timestamp: 2026-01-15T07:35:00Z
 
   human_review: null
 
-  state_transitions: []
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:builder
+      reason: Begin improving starter templates CTA visibility
+      timestamp: 2026-01-15T07:33:30Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:builder
+      reason: Added minimal above-the-fold CTA and updated styling
+      timestamp: 2026-01-15T07:34:30Z
+    - from: to_be_tested
+      to: done
+      by: agent:builder
+      reason: Verified CTA is visible above the fold and points to published templates
+      timestamp: 2026-01-15T07:35:00Z
+
+
+- id: SITE-012
+  type: build
+  state: done
+  owner: agent:builder
+  title: Add Google Analytics (gtag.js) to the site
+
+  description: |
+    Add Google Analytics to the site using the following snippet.
+    Prefer placing it in the HTML `<head>` so it loads early and consistently.
+
+    Tracking ID: G-3D57Q2FVD8
+
+    Snippet (paste as-is):
+
+    ```html
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3D57Q2FVD8"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3D57Q2FVD8');
+    </script>
+    ```
+
+  acceptance:
+    - Google tag snippet is present on the site (inserted once, not duplicated)
+    - Local serving still works and pages render without console errors
+    - Any remaining pages (if more than `index.html`) also include the snippet consistently
+
+  derived_from: SITE-005
+
+  execution_notes:
+    - by: agent:builder
+      note: |
+        Added the provided Google Analytics `gtag.js` snippet to the `<head>` of `index.html`.
+
+        Notes:
+        - This repo currently has a single HTML page (`index.html`), so the snippet is included consistently.
+      timestamp: 2026-01-15T20:10:00Z
+
+  human_review: null
+
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:builder
+      reason: Begin adding GA gtag.js snippet to site head
+      timestamp: 2026-01-15T20:08:30Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:builder
+      reason: Inserted GA snippet into index.html head (single insertion)
+      timestamp: 2026-01-15T20:09:30Z
+    - from: to_be_tested
+      to: done
+      by: agent:builder
+      reason: Verified local serving works and snippet appears once in index.html
+      timestamp: 2026-01-15T20:10:00Z
 ```
 
 ## Done
