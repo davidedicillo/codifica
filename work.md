@@ -152,7 +152,7 @@
 
 - id: SITE-003
   type: build
-  state: todo
+  state: done
   owner: agent:architect
   title: Propose codifica.app site structure and navigation
 
@@ -174,11 +174,76 @@
 
   derived_from: SITE-001
 
-  execution_notes: []
+  execution_notes:
+    - |
+      ## Proposed site structure (single page)
+
+      **One page:** Home (`/`)
+
+      **Header nav (anchors):**
+      - Overview (`#overview`)
+      - Protocol (`#protocol`)
+      - Philosophy (`#philosophy`)
+      - Examples (`#examples`)
+
+      ### Sections and intent (kept separate on the same page)
+
+      1) **Overview**
+         - Purpose: first introduction and on-ramp (SITE-001).
+         - Contains: a short definition, explicit non-goals, and the primary action (“get the starter template” once it exists).
+         - Why it exists: newcomers shouldn’t start in rule text; they need context and boundaries first.
+
+      2) **Protocol**
+         - Purpose: protocol overview + normative reference, written for first-time readers.
+         - Contains: the core artifacts (`codifica.json`, `work.md`) and required conventions (tasks, acceptance, state transitions, ownership/review).
+         - Why it exists: the spec is linkable via anchors without becoming a multi-page docs site.
+
+      3) **Philosophy**
+         - Purpose: rationale and constraints (the “why”).
+         - Contains: principles (Git-native traceability, explicit constraints, durability) and non-goals (not SaaS, not Kanban, not autonomy).
+         - Why it exists: keeps motivation separate from rules while remaining immediately adjacent for first-time readers.
+
+      4) **Examples**
+         - Purpose: practical “how” via short walkthroughs.
+         - Contains: 2–4 scenarios showing `work.md` tasks, acceptance criteria, and state transitions.
+         - Why it exists: makes Codifica tryable within minutes without adding pages.
+
+      ### Tooling (intentionally omitted for now)
+      - There is no tooling today, so there is **no tooling section** beyond “starter template” links when/if they exist.
+
+      ### Navigation rules (minimal + intentional)
+      - Keep navigation to anchors only (no dropdowns, no additional pages).
+      - Prefer cross-links between anchors over new pages.
+      - If/when the page exceeds a comfortable reading length, split only then (Protocol → its own page first).
 
   human_review: null
 
-  state_transitions: []
+  state_transitions:
+    - from: todo
+      to: done
+      by: agent
+      reason: Proposed minimal ≤5-page site IA and top navigation with explicit separation of spec/philosophy/examples/tooling
+      timestamp: 2026-01-15T00:00:00Z
+    - from: done
+      to: todo
+      by: human
+      reason: Tooling does not exist yet; restructure IA to support first introduction to the protocol (SITE-001)
+      timestamp: 2026-01-15T00:05:00Z
+    - from: todo
+      to: done
+      by: agent
+      reason: Revised IA to remove Tooling page and prioritize first-introduction onboarding consistent with SITE-001
+      timestamp: 2026-01-15T00:10:00Z
+    - from: done
+      to: todo
+      by: human
+      reason: Prefer single-page site for initial protocol introduction
+      timestamp: 2026-01-15T00:15:00Z
+    - from: todo
+      to: done
+      by: agent
+      reason: Revised IA to a single-page structure with anchor navigation and section separation
+      timestamp: 2026-01-15T00:20:00Z
 
 
 - id: SITE-004
