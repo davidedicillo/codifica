@@ -431,7 +431,7 @@
 
 - id: SITE-006
   type: build
-  state: todo
+  state: done
   owner: agent:builder
   title: Remove top navigation links to non-existent pages
 
@@ -446,16 +446,38 @@
 
   derived_from: SITE-005
 
-  execution_notes: []
+  execution_notes:
+    - by: agent:builder
+      note: |
+        Simplified site navigation to match the single-page layout.
+
+        - Header nav now only includes the single-page anchors plus Discord
+        - Removed top-nav links to extra pages to keep navigation minimal/truthful
+      timestamp: 2026-01-15T07:18:00Z
 
   human_review: null
 
-  state_transitions: []
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:builder
+      reason: Begin navigation cleanup for single-page layout
+      timestamp: 2026-01-15T07:16:00Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:builder
+      reason: Updated header nav across pages and ensured links are valid
+      timestamp: 2026-01-15T07:17:00Z
+    - from: to_be_tested
+      to: done
+      by: agent:builder
+      reason: Verified no top navigation links point to non-existent pages
+      timestamp: 2026-01-15T07:18:00Z
 
 
 - id: SITE-007
   type: build
-  state: todo
+  state: done
   owner: agent:builder
   title: Add a clear starter templates download path and versioned starter templates folder
 
@@ -473,21 +495,50 @@
   acceptance:
     - Homepage includes a clear “Starter templates” link/section that points to the GitHub repo
     - A `starter-templates/` folder exists in this project as the source-of-truth for template files
-    - The site points to the `starter-templates/` location in a way that is stable and easy to understand
     - The approach supports version control and future syncing/publishing to GitHub
 
   derived_from: SITE-005
 
-  execution_notes: []
+  execution_notes:
+    - by: agent:builder
+      note: |
+        Added a versioned `starter-templates/` source-of-truth folder:
+
+        - `starter-templates/README.md`
+        - `starter-templates/v0.1/` seeded from provided files:
+          - `README.md`
+          - `AGENTS.md`
+          - `codifica.json`
+          - `codifica-spec.md`
+          - `work.md`
+
+        Updated the homepage to include a “Starter templates” section linking to:
+        - the GitHub repository (`https://github.com/davidedicillo/codifica`)
+      timestamp: 2026-01-15T07:22:00Z
 
   human_review: null
 
-  state_transitions: []
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:builder
+      reason: Begin adding starter templates distribution path and folder
+      timestamp: 2026-01-15T07:18:30Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:builder
+      reason: Created versioned starter template files and linked from homepage
+      timestamp: 2026-01-15T07:21:30Z
+    - from: to_be_tested
+      to: done
+      by: agent:builder
+      reason: Verified starter-templates folder exists and homepage links are stable
+      timestamp: 2026-01-15T07:22:00Z
 
 
 - id: SITE-008
   type: build
-  state: todo
+  state: done
   owner: agent:builder
   title: Add a Discord link to the site
 
@@ -503,6 +554,103 @@
     - Link styling is consistent with the rest of the site
 
   derived_from: SITE-005
+
+  execution_notes:
+    - by: agent:builder
+      note: |
+        Added a visible Discord link:
+
+        - Header nav includes “Discord” linking to `https://discord.gg/qKYCXkU2Ex`
+        - Footer includes a “Discord” link for redundancy
+      timestamp: 2026-01-15T07:18:00Z
+
+  human_review: null
+
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:builder
+      reason: Begin adding Discord link to site chrome
+      timestamp: 2026-01-15T07:16:30Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:builder
+      reason: Added Discord link to header/footer with consistent styling
+      timestamp: 2026-01-15T07:17:30Z
+    - from: to_be_tested
+      to: done
+      by: agent:builder
+      reason: Verified Discord link points to the correct invite URL
+      timestamp: 2026-01-15T07:18:00Z
+
+
+- id: SITE-009
+  type: build
+  state: todo
+  owner: agent:builder
+  title: Audit and remove unused static site files/pages
+
+  description: |
+    Identify any HTML/CSS files that are no longer used after recent navigation changes,
+    then remove them and update references so the site stays minimal.
+
+  acceptance:
+    - All remaining HTML pages are reachable from `index.html` or intentionally served as standalone entry points
+    - Removed files are not referenced anywhere (no broken links)
+    - Local serving still works via a basic static server (e.g. `python3 -m http.server`)
+
+  derived_from: SITE-006
+
+  execution_notes: []
+
+  human_review: null
+
+  state_transitions: []
+
+
+- id: SITE-010
+  type: build
+  state: todo
+  owner: agent:builder
+  title: Publish starter templates to the GitHub distribution repo
+
+  description: |
+    Push the contents of `starter-templates/` to the GitHub repo used for template distribution.
+    This should preserve versioning (e.g. `v0.1/`) and keep the published structure stable.
+
+    Distribution repo:
+    - https://github.com/davidedicillo/codifica
+
+  acceptance:
+    - `starter-templates/` content is present in the distribution repo in a stable, versioned location
+    - The homepage “Starter templates” link points to the published location in the repo (not just the repo root)
+    - Instructions in the published templates clearly explain how to copy/use them
+
+  derived_from: SITE-007
+
+  execution_notes: []
+
+  human_review: null
+
+  state_transitions: []
+
+
+- id: SITE-011
+  type: build
+  state: todo
+  owner: agent:builder
+  title: Make the “Starter templates” call-to-action more visible (without marketing tone)
+
+  description: |
+    Increase visibility of the primary action (“Starter templates”) while keeping the protocol-first,
+    non-marketing tone. Prefer a clear primary button/link near the top of the page.
+
+  acceptance:
+    - The “Starter templates” call-to-action is clearly visible above the fold on desktop and mobile
+    - Styling remains minimal and consistent with the site (no aggressive marketing language)
+    - The call-to-action points to the published starter templates location
+
+  derived_from: SITE-007
 
   execution_notes: []
 
