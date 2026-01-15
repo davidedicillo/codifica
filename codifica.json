@@ -1,0 +1,8 @@
+{
+  "protocol": "codifica",
+  "version": "0.1",
+  "spec": "codifica-spec.md",
+  "state": "work.md",
+  "assets": "assets/",
+  "rules": "strict"
+}
