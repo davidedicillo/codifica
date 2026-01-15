@@ -253,7 +253,7 @@
 
 - id: SITE-004
   type: build
-  state: todo
+  state: done
   owner: agent:writer
   title: Rewrite site copy to align with final site architecture
 
@@ -279,11 +279,91 @@
 
   derived_from: SITE-003
 
-  execution_notes: []
+  execution_notes:
+    - |
+      ## Single-page copy (aligned to SITE-003)
+
+      ### Overview (`#overview`)
+
+      Codifica is a file-based protocol for coordinating work between humans and AI. It treats project state as plain text committed with the code, so changes are reviewable, auditable, and portable.
+
+      The problem it solves: most human↔AI collaboration happens in transient chat context and tool-specific UIs. That makes it difficult to review what changed, understand why it changed, reproduce decisions, and coordinate multiple contributors (human or agent) without conflicts or loss of context. Codifica moves the shared state into versioned files so the workflow inherits Git’s guarantees and review practices.
+
+      Codifica is intentionally Git-native: the primary interface is the repository history (diffs, reviews, and merges). The protocol standardizes how work, decisions, and constraints are recorded so that humans and agents can collaborate without relying on a specific platform.
+
+      Codifica is not a task manager, not a SaaS product, and not a Kanban system. It does not replace human ownership, judgment, or review.
+
+      ### Protocol (`#protocol`)
+
+      Codifica defines a small set of artifacts and conventions:
+
+      - `codifica.json`: project-level configuration and constraints (conventions, allowed operations, optional metadata).
+      - `work.md`: the append-friendly project state file where tasks, acceptance criteria, review notes, and state transitions are recorded.
+
+      A typical task entry records:
+      - identifiers and type (`id`, `type`)
+      - current state and ownership (`state`, `owner`)
+      - what “done” means (`acceptance`)
+      - provenance (`derived_from`)
+      - execution notes and rationale (`execution_notes`)
+      - an auditable history of transitions (`state_transitions`)
+
+      The protocol assumes normal development workflow: work is proposed as changes to these files (and code), reviewed via diffs, and accepted by merging.
+
+      ### Philosophy (`#philosophy`)
+
+      Codifica prefers constraints over autonomy:
+      - work is explicit and scoped
+      - agent behavior is bounded by written rules
+      - the human remains accountable for outcomes
+
+      Codifica prefers durable state over dashboards:
+      - the source of truth is text, not a UI
+      - state is readable without any service
+      - history is preserved by version control
+
+      Codifica prefers traceability over output:
+      - the “why” is recorded with the change
+      - review is a first-class step, not an afterthought
+
+      ### Examples (`#examples`)
+
+      **Example 1: Define a task with explicit acceptance**
+
+      A `work.md` task captures intent and constraints up front:
+
+      ```yaml
+      - id: EX-001
+        type: build
+        state: todo
+        owner: agent
+        title: Add homepage copy
+        acceptance:
+          - Explains Codifica in plain language
+          - Mentions `codifica.json` and `work.md`
+      ```
+
+      **Example 2: Record a state transition**
+
+      When the task changes state, the protocol records who changed it and why:
+
+      ```yaml
+        state_transitions:
+          - from: todo
+            to: done
+            by: agent
+            reason: Draft completed and stored in execution_notes
+            timestamp: 2026-01-15T00:00:00Z
+      ```
 
   human_review: null
 
-  state_transitions: []
+  state_transitions:
+    - from: todo
+      to: done
+      by: agent
+      reason: Rewrote single-page site copy to match SITE-003 sections (Overview/Protocol/Philosophy/Examples)
+      timestamp: 2026-01-15T00:30:00Z
 
 
 - id: SITE-005
