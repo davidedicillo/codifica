@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codifica</title>
+    <meta name="description" content="Codifica is a file-based protocol for coordinating work between humans and AI." />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap top-inner">
+        <a class="brand" href="./">Codifica</a>
+        <nav class="nav" aria-label="Primary">
+          <a href="#overview">Overview</a>
+          <a href="#protocol">Protocol</a>
+          <a href="#philosophy">Philosophy</a>
+          <a href="#examples">Examples</a>
+          <a href="./codifica-spec.html">Spec</a>
+          <a href="./work.html">Work</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <h1>Codifica</h1>
+      <p class="muted">
+        A small, durable, file-based protocol for coordinating work between humans and AI.
+      </p>
+
+      <section id="overview">
+        <h2>Overview</h2>
+        <p>
+          Codifica is a file-based protocol for coordinating work between humans and AI. It treats project state as
+          plain text committed with the code, so changes are reviewable, auditable, and portable.
+        </p>
+        <p>
+          The problem it solves: most human↔AI collaboration happens in transient chat context and tool-specific UIs.
+          That makes it difficult to review what changed, understand why it changed, reproduce decisions, and coordinate
+          multiple contributors (human or agent) without conflicts or loss of context. Codifica moves the shared state
+          into versioned files so the workflow inherits Git’s guarantees and review practices.
+        </p>
+        <p>
+          Codifica is intentionally Git-native: the primary interface is the repository history (diffs, reviews, and merges).
+          The protocol standardizes how work, decisions, and constraints are recorded so that humans and agents can collaborate
+          without relying on a specific platform.
+        </p>
+        <p>
+          Codifica is not a task manager, not a SaaS product, and not a Kanban system. It does not replace human ownership,
+          judgment, or review.
+        </p>
+      </section>
+
+      <section id="protocol">
+        <h2>Protocol</h2>
+        <p>Codifica defines a small set of artifacts and conventions:</p>
+        <ul>
+          <li><code>codifica.json</code>: project-level configuration and constraints (conventions, allowed operations, optional metadata).</li>
+          <li><code>work.md</code>: the append-friendly project state file where tasks, acceptance criteria, review notes, and state transitions are recorded.</li>
+        </ul>
+        <p>A typical task entry records:</p>
+        <ul>
+          <li>identifiers and type (<code>id</code>, <code>type</code>)</li>
+          <li>current state and ownership (<code>state</code>, <code>owner</code>)</li>
+          <li>what “done” means (<code>acceptance</code>)</li>
+          <li>provenance (<code>derived_from</code>)</li>
+          <li>execution notes and rationale (<code>execution_notes</code>)</li>
+          <li>an auditable history of transitions (<code>state_transitions</code>)</li>
+        </ul>
+        <p>
+          The protocol assumes normal development workflow: work is proposed as changes to these files (and code), reviewed via diffs,
+          and accepted by merging.
+        </p>
+      </section>
+
+      <section id="philosophy">
+        <h2>Philosophy</h2>
+        <p>Codifica prefers constraints over autonomy:</p>
+        <ul>
+          <li>work is explicit and scoped</li>
+          <li>agent behavior is bounded by written rules</li>
+          <li>the human remains accountable for outcomes</li>
+        </ul>
+        <p>Codifica prefers durable state over dashboards:</p>
+        <ul>
+          <li>the source of truth is text, not a UI</li>
+          <li>state is readable without any service</li>
+          <li>history is preserved by version control</li>
+        </ul>
+        <p>Codifica prefers traceability over output:</p>
+        <ul>
+          <li>the “why” is recorded with the change</li>
+          <li>review is a first-class step, not an afterthought</li>
+        </ul>
+      </section>
+
+      <section id="examples">
+        <h2>Examples</h2>
+
+        <h3>Example 1: Define a task with explicit acceptance</h3>
+        <p>A <code>work.md</code> task captures intent and constraints up front:</p>
+        <pre><code>- id: EX-001
+  type: build
+  state: todo
+  owner: agent
+  title: Add homepage copy
+  acceptance:
+    - Explains Codifica in plain language
+    - Mentions `codifica.json` and `work.md`</code></pre>
+
+        <h3>Example 2: Record a state transition</h3>
+        <p>When the task changes state, the protocol records who changed it and why:</p>
+        <pre><code>state_transitions:
+  - from: todo
+    to: done
+    by: agent
+    reason: Draft completed and stored in execution_notes
+    timestamp: 2026-01-15T00:00:00Z</code></pre>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">
+        <p>
+          Project artifacts:
+          <a href="./codifica-spec.md">codifica-spec.md</a>,
+          <a href="./work.md">work.md</a>,
+          <a href="./codifica.json">codifica.json</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
