@@ -31,13 +31,14 @@ a:hover { text-decoration: underline; }
   background: rgba(251, 251, 253, 0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
+  margin-bottom: 30px;
 }
 .top-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.8rem 0;
+  padding: 10px 0;
 }
 .brand {
   display: inline-flex;
@@ -54,7 +55,8 @@ a:hover { text-decoration: underline; }
 .nav a { color: var(--muted); }
 .nav a:hover { color: var(--text); }
 
-main { padding: 2rem 0 2.5rem; }
+main { padding: 3.5rem 0 2.5rem; }
+main > h1 { margin-top: 1rem; }
 section {
   padding: 1.25rem 0;
   border-top: 1px solid var(--line);
