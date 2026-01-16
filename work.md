@@ -792,6 +792,37 @@
       by: agent:builder
       reason: Verified local serving works and snippet appears once in index.html
       timestamp: 2026-01-15T20:10:00Z
+
+
+- id: SITE-013
+  type: build
+  state: todo
+  owner: agent:builder
+  title: Introduce the Codifica logo into the website design
+
+  description: |
+    Integrate the Codifica logo into the site UI using the existing assets in `/images`.
+    Use the brand color `#5E00FF` as the reference color when styling needs to match the logo.
+
+    Scope:
+    - Add the logo to the site header/brand area (with accessible alt text)
+    - Ensure the favicon / pinned icon / social preview metadata is reasonable for a static site
+    - Keep the design minimal and consistent with the current style
+
+  acceptance:
+    - Header shows the Codifica logo (crisp on desktop + mobile)
+    - Logo has appropriate accessibility text (or is marked decorative if redundant)
+    - Logo usage does not introduce layout shift or readability issues
+    - Any added styling that references the brand color uses `#5E00FF` (or a variable derived from it)
+    - No broken image links; local static serving still works
+
+  derived_from: SITE-005
+
+  execution_notes: []
+
+  human_review: null
+
+  state_transitions: []
 ```
 
 ## Done
