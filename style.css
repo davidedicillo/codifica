@@ -1,11 +1,12 @@
 :root {
-  --bg: #0b0c10;
-  --panel: #11131a;
-  --text: #e8eaf0;
-  --muted: #a7afc3;
-  --line: rgba(232, 234, 240, 0.12);
-  --link: #8ab4ff;
-  --code: #d7e3ff;
+  --bg: #fbfbfd;
+  --panel: #ffffff;
+  --text: #101114;
+  --muted: #4f5663;
+  --line: rgba(16, 17, 20, 0.12);
+  --brand: #5E00FF;
+  --link: var(--brand);
+  --code: #1b1f2a;
   --max: 76ch;
 }
 
@@ -27,7 +28,7 @@ a:hover { text-decoration: underline; }
 .top {
   position: sticky;
   top: 0;
-  background: rgba(11, 12, 16, 0.88);
+  background: rgba(251, 251, 253, 0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
@@ -39,9 +40,15 @@ a:hover { text-decoration: underline; }
   padding: 0.8rem 0;
 }
 .brand {
-  font-weight: 700;
-  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
   color: var(--text);
+}
+.brand img,
+.brand .brand-logo {
+  height: 24px;
+  width: auto;
+  display: block;
 }
 .nav { display: flex; gap: 0.8rem; flex-wrap: wrap; }
 .nav a { color: var(--muted); }
@@ -83,16 +90,16 @@ li { margin: 0.25rem 0; }
   gap: 0.5rem;
   padding: 0.55rem 0.8rem;
   border-radius: 10px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--line));
   color: var(--text);
-  background: rgba(138, 180, 255, 0.08);
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
   text-decoration: none;
   font-weight: 600;
 }
 .btn:hover {
   text-decoration: none;
-  border-color: rgba(138, 180, 255, 0.28);
-  background: rgba(138, 180, 255, 0.12);
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
 code, pre {
@@ -100,8 +107,8 @@ code, pre {
 }
 code {
   color: var(--code);
-  background: rgba(138, 180, 255, 0.08);
-  border: 1px solid rgba(138, 180, 255, 0.14);
+  background: rgba(94, 0, 255, 0.06);
+  border: 1px solid rgba(94, 0, 255, 0.14);
   padding: 0.08rem 0.35rem;
   border-radius: 6px;
 }

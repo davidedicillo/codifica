@@ -796,7 +796,7 @@
 
 - id: SITE-013
   type: build
-  state: todo
+  state: done
   owner: agent:builder
   title: Introduce the Codifica logo into the website design
 
@@ -818,11 +818,44 @@
 
   derived_from: SITE-005
 
-  execution_notes: []
+  execution_notes:
+    - by: agent:builder
+      note: |
+        Introduced the Codifica logo into the site:
+
+        - Header brand includes logo assets without layout shift
+        - Added basic static-site metadata:
+          - favicon + apple-touch-icon use `images/codifica-mark-color.png`
+          - OpenGraph + Twitter image metadata uses `images/codifica-logo-color.png`
+          - `theme-color` set to `#5E00FF`
+        - Added `--brand: #5E00FF` and used it for CTA button styling
+      timestamp: 2026-01-16T00:15:00Z
+    - by: agent:builder
+      note: |
+        Updated the site presentation:
+
+        - Switched to a light background theme (dark text) while keeping `#5E00FF` as the accent color
+        - Updated the header to use `images/codifica-logo-color.png` (logo-only) instead of mark + text
+      timestamp: 2026-01-16T00:20:00Z
 
   human_review: null
 
-  state_transitions: []
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:builder
+      reason: Begin integrating logo assets and metadata into static site
+      timestamp: 2026-01-16T00:12:30Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:builder
+      reason: Added header logo, favicon/meta tags, and brand color styling
+      timestamp: 2026-01-16T00:14:30Z
+    - from: to_be_tested
+      to: done
+      by: agent:builder
+      reason: Verified local serving and image links resolve without errors
+      timestamp: 2026-01-16T00:15:00Z
 ```
 
 ## Done
