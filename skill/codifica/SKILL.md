@@ -1,6 +1,6 @@
 ---
 name: codifica
-description: Operate in repositories that use the Codifica protocol for human-agent task coordination. Read state files, claim tasks, record execution notes with summaries, produce artifacts, and hand off work to other agents — all via Git commits.
+description: Keep context when work moves between agents or between you and a human. Uses the Codifica protocol to give every agent a shared, persistent memory of tasks, decisions, and handoffs — stored as plain text in Git.
 version: 1.0.0
 homepage: https://github.com/davidedicillo/codifica
 metadata: {"openclaw":{"emoji":"📋","requires":{"anyBins":["git"]}}}
