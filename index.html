@@ -3,23 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Codifica</title>
-    <meta name="description" content="Codifica is a file-based protocol for coordinating work between humans and AI." />
+    <title>Codifica — File-based protocol for human-AI coordination</title>
+    <meta name="description" content="Codifica is a file-based protocol for coordinating work between humans and AI agents. Multi-agent coordination, structured handoffs, and provenance — all in plain text." />
     <meta name="theme-color" content="#5E00FF" />
 
     <meta property="og:title" content="Codifica" />
-    <meta property="og:description" content="Codifica is a file-based protocol for coordinating work between humans and AI." />
+    <meta property="og:description" content="A file-based protocol for coordinating work between humans and AI agents. Multi-agent ready." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="./images/codifica-logo-color.png" />
 
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Codifica" />
-    <meta name="twitter:description" content="Codifica is a file-based protocol for coordinating work between humans and AI." />
+    <meta name="twitter:description" content="A file-based protocol for coordinating work between humans and AI agents. Multi-agent ready." />
     <meta name="twitter:image" content="./images/codifica-logo-color.png" />
 
     <link rel="icon" type="image/png" href="./images/codifica-mark-color.png" />
     <link rel="apple-touch-icon" href="./images/codifica-mark-color.png" />
-    <link rel="stylesheet" href="./style.css?v=4" />
+    <link rel="stylesheet" href="./style.css?v=5" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3D57Q2FVD8"></script>
@@ -46,6 +46,7 @@
         <nav class="nav" aria-label="Primary">
           <a href="#overview">Overview</a>
           <a href="#protocol">Protocol</a>
+          <a href="#multi-agent">Multi-Agent</a>
           <a href="#philosophy">Philosophy</a>
           <a href="#examples">Examples</a>
           <a href="https://discord.gg/qKYCXkU2Ex" rel="noreferrer" target="_blank">Discord</a>
@@ -56,17 +57,21 @@
     <main class="wrap">
       <h1>Codifica</h1>
       <p class="muted">
-        A small, durable, file-based protocol for coordinating work between humans and AI.
+        A small, durable, file-based protocol for coordinating work between humans and AI agents.
+        Multi-agent coordination, structured handoffs, and provenance &mdash; all in plain text.
       </p>
       <div class="card">
         <div class="row">
           <div>
             <strong>Starter templates</strong>
-            <div class="muted">Copy a minimal v0.1 setup into your repo.</div>
+            <div class="muted">Copy a minimal v0.2 setup into your repo.</div>
           </div>
-          <div>
-            <a class="btn" href="https://github.com/davidedicillo/codifica/tree/main/starter-templates/v0.1" rel="noreferrer">
-              View templates (v0.1)
+          <div class="btn-group">
+            <a class="btn" href="https://github.com/davidedicillo/codifica/tree/main/starter-templates/v0.2" rel="noreferrer">
+              View templates (v0.2)
+            </a>
+            <a class="btn btn-secondary" href="https://github.com/davidedicillo/codifica/tree/main/starter-templates/v0.1" rel="noreferrer">
+              v0.1
             </a>
           </div>
         </div>
@@ -75,14 +80,14 @@
       <section id="overview">
         <h2>Overview</h2>
         <p>
-          Codifica is a file-based protocol for coordinating work between humans and AI. It treats project state as
+          Codifica is a file-based protocol for coordinating work between humans and AI agents. It treats project state as
           plain text committed with the code, so changes are reviewable, auditable, and portable.
         </p>
         <p>
-          The problem it solves: most human↔AI collaboration happens in transient chat context and tool-specific UIs.
+          The problem it solves: most human&harr;AI collaboration happens in transient chat context and tool-specific UIs.
           That makes it difficult to review what changed, understand why it changed, reproduce decisions, and coordinate
           multiple contributors (human or agent) without conflicts or loss of context. Codifica moves the shared state
-          into versioned files so the workflow inherits Git’s guarantees and review practices.
+          into versioned files so the workflow inherits Git's guarantees and review practices.
         </p>
         <p>
           Codifica is intentionally Git-native: the primary interface is the repository history (diffs, reviews, and merges).
@@ -99,16 +104,19 @@
         <h2>Protocol</h2>
         <p>Codifica defines a small set of artifacts and conventions:</p>
         <ul>
-          <li><code>codifica.json</code>: project-level configuration and constraints (conventions, allowed operations, optional metadata).</li>
-          <li><code>work.md</code>: the append-friendly project state file where tasks, acceptance criteria, review notes, and state transitions are recorded.</li>
+          <li><code>codifica.json</code>: project-level configuration &mdash; protocol version, state file locations, agent permissions, file scope rules, and runtime constraints.</li>
+          <li><code>work.md</code>: the shared state file where tasks, acceptance criteria, review notes, execution logs, and state transitions are recorded. Can be split across multiple files for scalability.</li>
         </ul>
         <p>A typical task entry records:</p>
         <ul>
           <li>identifiers and type (<code>id</code>, <code>type</code>)</li>
           <li>current state and ownership (<code>state</code>, <code>owner</code>)</li>
-          <li>what “done” means (<code>acceptance</code>)</li>
-          <li>provenance (<code>derived_from</code>)</li>
-          <li>execution notes and rationale (<code>execution_notes</code>)</li>
+          <li>priority and dependencies (<code>priority</code>, <code>depends_on</code>)</li>
+          <li>what "done" means (<code>acceptance</code>)</li>
+          <li>structured input context (<code>context</code>: files, references, constraints)</li>
+          <li>execution notes with summaries (<code>execution_notes</code>, <code>summary</code>)</li>
+          <li>produced artifacts (<code>artifacts</code>)</li>
+          <li>provenance metadata (<code>provenance</code>: session ID, commit SHA)</li>
           <li>an auditable history of transitions (<code>state_transitions</code>)</li>
         </ul>
         <p>
@@ -118,7 +126,43 @@
         <h3>Starter templates</h3>
         <p>
           Get a copyable starter setup from:
-          <a href="https://github.com/davidedicillo/codifica/tree/main/starter-templates/v0.1" rel="noreferrer">starter-templates/v0.1</a>.
+          <a href="https://github.com/davidedicillo/codifica/tree/main/starter-templates/v0.2" rel="noreferrer">starter-templates/v0.2</a>.
+        </p>
+      </section>
+
+      <section id="multi-agent">
+        <h2>Multi-Agent Coordination</h2>
+        <p>
+          Codifica v0.2 is designed for multi-agent systems. When work distributes across isolated agents, context is
+          typically lost &mdash; each agent has its own session, workspace, and memory. Codifica solves this by acting as
+          a shared memory layer that all agents read and write.
+        </p>
+
+        <h3>Task claiming</h3>
+        <p>
+          Agents claim tasks via atomic Git commits (state + owner + timestamp in a single commit). If a push fails because another
+          agent claimed first, the agent picks a different task. No race conditions, no distributed locks.
+        </p>
+
+        <h3>Structured handoffs</h3>
+        <p>
+          When one agent's output feeds into another agent's work, the handoff is explicit:
+          dependencies (<code>depends_on</code>), structured context (<code>context</code>),
+          produced artifacts (<code>artifacts</code>), and scannable summaries (<code>summary</code>).
+          No side-channel communication needed.
+        </p>
+
+        <h3>Cross-agent queryability</h3>
+        <p>
+          Any agent can answer "what did the marketing agent do this week?" by scanning <code>work.md</code> for
+          <code>owner</code>, <code>state</code>, <code>completed_at</code>, and <code>summary</code> fields.
+          Structured data, not chat transcripts.
+        </p>
+
+        <h3>Provenance</h3>
+        <p>
+          Every transition and execution note can carry provenance metadata (session ID, commit SHA) so a human
+          reviewing a Git diff can trace actions back to their source across multiple agents.
         </p>
       </section>
 
@@ -138,43 +182,92 @@
         </ul>
         <p>Codifica prefers traceability over output:</p>
         <ul>
-          <li>the “why” is recorded with the change</li>
+          <li>the "why" is recorded with the change</li>
           <li>review is a first-class step, not an afterthought</li>
+          <li>provenance connects actions to agents and sessions</li>
         </ul>
+        <p class="principle">
+          Humans express <strong>intent and judgment</strong>.
+          Agents execute <strong>explicit contracts</strong>.
+          Codifica preserves <strong>truth and causality</strong>.
+        </p>
       </section>
 
       <section id="examples">
         <h2>Examples</h2>
 
-        <h3>Example 1: Define a task with explicit acceptance</h3>
-        <p>A <code>work.md</code> task captures intent and constraints up front:</p>
-        <pre><code>- id: EX-001
+        <h3>Example 1: Define a task with context and dependencies</h3>
+        <p>A <code>work.md</code> task captures intent, constraints, and structured context:</p>
+        <pre><code>- id: FEAT-102
   type: build
   state: todo
-  owner: agent
-  title: Add homepage copy
-  acceptance:
-    - Explains Codifica in plain language
-    - Mentions `codifica.json` and `work.md`</code></pre>
+  owner: agent:builder
+  title: Implement user login flow
+  priority: high
+  depends_on:
+    - FEAT-101
 
-        <h3>Example 2: Record a state transition</h3>
-        <p>When the task changes state, the protocol records who changed it and why:</p>
-        <pre><code>state_transitions:
-  - from: todo
-    to: done
-    by: agent
-    reason: Draft completed and stored in execution_notes
-    timestamp: 2026-01-15T00:00:00Z</code></pre>
+  acceptance:
+    - Login form validates email and password
+    - Successful login redirects to dashboard
+
+  context:
+    files:
+      - src/auth/login.ts
+      - docs/auth-architecture.md
+    references:
+      - FEAT-101
+    constraints:
+      - "Must be backward compatible with v2.x clients"</code></pre>
+
+        <h3>Example 2: Record completion with summary and artifacts</h3>
+        <p>When an agent completes work, it records a scannable summary and produced files:</p>
+        <pre><code>execution_notes:
+  - by: agent:builder
+    note: |
+      Implemented login flow with email/password validation.
+      Added redirect logic to dashboard on success.
+    summary: "Implemented login flow with validation and redirect"
+    timestamp: 2026-02-15T14:30:00Z
+    provenance:
+      session_id: sess_abc123
+
+artifacts:
+  - path: src/auth/login.ts
+    type: code
+  - path: src/auth/login.test.ts
+    type: test
+
+completed_at: 2026-02-15T14:30:00Z</code></pre>
+
+        <h3>Example 3: Cross-agent handoff</h3>
+        <p>Agent B's task depends on Agent A's completed work. The handoff is fully explicit:</p>
+        <pre><code>- id: MARKETING-014
+  type: build
+  state: todo
+  owner: agent:marketing
+  title: Write pricing blog post
+  depends_on:
+    - RESEARCH-012
+
+  context:
+    files:
+      - assets/RESEARCH-012/pricing.csv
+    references:
+      - RESEARCH-012
+    notes: |
+      Use the competitor analysis from RESEARCH-012.
+      See its execution_notes for methodology.</code></pre>
       </section>
     </main>
 
     <footer class="footer">
       <div class="wrap">
         <p>
-          Project artifacts:
-          <a href="./codifica-spec.md">codifica-spec.md</a>,
-          <a href="./work.md">work.md</a>,
-          <a href="./codifica.json">codifica.json</a>
+          Protocol:
+          <a href="./codifica-spec.md">codifica-spec.md</a> &middot;
+          <a href="./codifica.json">codifica.json</a> &middot;
+          <a href="https://github.com/davidedicillo/codifica" rel="noreferrer">GitHub</a>
         </p>
         <p>
           Community:
