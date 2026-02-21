@@ -157,6 +157,22 @@ See [AGENTS.md](./starter-templates/v0.2/AGENTS.md) for the full agent instructi
 
 ---
 
+## OpenClaw skill
+
+If you use [OpenClaw](https://docs.openclaw.ai), install the Codifica skill so all your agents automatically know how to operate in Codifica-enabled repos:
+
+```bash
+# Install from ClawHub
+clawhub install codifica
+
+# Or copy manually
+cp -r skill/codifica ~/.openclaw/skills/codifica
+```
+
+The skill teaches agents to read `codifica.json`, claim tasks, record execution notes with summaries, produce artifacts, and hand off work to other agents — without needing `AGENTS.md` in every repo.
+
+---
+
 ## Repository structure
 
 ```
@@ -171,6 +187,9 @@ starter-templates/
     codifica-spec.md
     work.md
     AGENTS.md
+skill/
+  codifica/                # OpenClaw skill
+    SKILL.md
 ```
 
 ---
