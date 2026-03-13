@@ -54,6 +54,7 @@ To use this template, copy these files into the root of your repository:
 - `codifica-spec.md`
 - `work.md`
 - `AGENTS.md`
+- `CLAUDE.md` — Claude Code integration (teaches the agent to read project state on session start and present work for human review)
 
 Then commit them and edit `work.md` to add your first real task.
 

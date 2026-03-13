@@ -27,6 +27,7 @@ curl -sL https://raw.githubusercontent.com/davidedicillo/codifica/main/starter-t
 curl -sL https://raw.githubusercontent.com/davidedicillo/codifica/main/starter-templates/v0.2/work.md -o work.md
 curl -sL https://raw.githubusercontent.com/davidedicillo/codifica/main/starter-templates/v0.2/codifica-spec.md -o codifica-spec.md
 curl -sL https://raw.githubusercontent.com/davidedicillo/codifica/main/starter-templates/v0.2/AGENTS.md -o AGENTS.md
+curl -sL https://raw.githubusercontent.com/davidedicillo/codifica/main/starter-templates/v0.2/CLAUDE.md -o CLAUDE.md
 ```
 
 ## What's in v0.2
@@ -120,6 +121,7 @@ starter-templates/
     codifica-spec.md
     work.md
     AGENTS.md
+    CLAUDE.md              # Claude Code integration
   v0.1/                    # legacy starter templates
     codifica.json
     codifica-spec.md

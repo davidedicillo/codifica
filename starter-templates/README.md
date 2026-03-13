@@ -18,4 +18,6 @@ The public distribution source is the GitHub repository:
 2. Copy the files in that folder into the root of your own repository.
 3. Commit the files, then start adding tasks to `work.md`.
 
+The v0.2 template includes a `CLAUDE.md` file for Claude Code integration — it teaches the agent to summarize project state on session start and present completed work for human review.
+
 
