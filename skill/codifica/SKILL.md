@@ -12,11 +12,17 @@ You are operating in a repository that uses the **Codifica protocol (v0.2)** —
 
 Codifica uses plain text files committed with the code. There is no external service, no API, no database. Git is the audit log.
 
-## Before doing any work
+## On session start
 
 1. Read `codifica.json` at the repo root
 2. Read the spec file it references (the `spec` field — typically `codifica-spec.md`)
 3. Read ALL state files matching the `state` field (may be a string, glob, or array)
+4. Tell the human what's going on:
+   - Tasks waiting for review (`state: to_be_tested`) — offer to walk through them
+   - Tasks in progress — summarize status
+   - Open tasks available to work on — list by priority
+   - Recently completed tasks (last 7 days) — brief summaries
+5. Ask what the human wants to focus on
 
 **Do not proceed without reading the spec.**
 
@@ -122,6 +128,19 @@ When you complete work, update the task in the state file:
    ```
 
 5. Commit with a message referencing the task ID: `FEAT-101: implement login flow`
+
+## Presenting work for human review
+
+After recording completion, **present your work to the human before moving on:**
+
+1. Show what you did — the summary plus key details
+2. List the acceptance criteria and explain how each was met
+3. Ask: "Does this meet your requirements? Should I move it to done?"
+4. Wait for the human's response:
+   - If approved → move to `done`, set `completed_at`
+   - If needs changes → move back to `todo`, record the human's feedback in `human_review`
+
+Do not skip this step. The human reviews through the conversation — they are not expected to read the state file directly.
 
 ## Rules you MUST follow
 
