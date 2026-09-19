@@ -8,7 +8,7 @@
 ```yaml
 - id: APP-BRAND-002
   type: build
-  state: in_progress
+  state: to_be_tested
   owner: agent:codex
   title: Place channel introduction badge beside its heading
   acceptance:
@@ -21,6 +21,11 @@
       by: agent:codex
       reason: User requested inline channel introduction badge
       timestamp: 2026-09-19T18:06:57Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:codex
+      reason: Build and desktop/mobile layout checks pass; deploying for live verification
+      timestamp: 2026-09-19T18:09:00Z
 
 - id: APP-BRAND-001
   type: build
