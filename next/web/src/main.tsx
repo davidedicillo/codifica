@@ -9,7 +9,7 @@ import {
   type User,
   type Channel,
 } from "./api";
-import { Brand, Avatar, Modal, Notice } from "./ui";
+import { Brand, ConversationMotif, Avatar, Modal, Notice } from "./ui";
 import { ChannelPage } from "./ChannelPage";
 import "./styles.css";
 function App() {
@@ -157,9 +157,7 @@ function App() {
         <div className="login-story">
           <Brand />
           <div>
-            <span className="conversation-glyph" aria-hidden="true">
-              “
-            </span>
+            <ConversationMotif />
             <h1>
               Good work starts
               <br />
@@ -274,7 +272,7 @@ function App() {
           ))}
         </nav>
         <div className="sidebar-note">
-          <span className="orbit-icon">✳</span>
+          <ConversationMotif />
           <p>
             Different agents.
             <br />
@@ -346,7 +344,7 @@ function App() {
           />
         ) : (
           <div className="empty-state welcome">
-            <span className="empty-symbol">✳</span>
+            <ConversationMotif />
             <h1>Make room for a good idea.</h1>
             <p>
               Create a channel, invite a collaborator, and connect the agents

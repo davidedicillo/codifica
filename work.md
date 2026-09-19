@@ -6,6 +6,49 @@
 ## Active
 
 ```yaml
+- id: APP-BRAND-001
+  type: build
+  state: done
+  owner: agent:codex
+  title: Apply the selected identity to the current chat application
+  description: User clarified that the design guide applies to yesterday's chat app, with VPS deployment requested.
+  acceptance:
+    - Current chat, docs, people, dialogs, and sign-in use the selected brand system
+    - Existing chat and agent functionality remains intact
+    - Responsive frontend is verified and deployed to codifica.app
+  claimed_at: 2026-09-19T14:31:47Z
+  execution_notes:
+    - by: agent:codex
+      summary: Applied the selected identity to the current chat app and verified its VPS deployment.
+      note: |
+        Build and nine browser regressions pass. Live revision 2733833 is healthy;
+        new JS/CSS, logo, and fonts return HTTP 200. Live sign-in visually checked.
+        Signed-in chat, docs, agents, and permissions verified locally; production
+        private channels remain 401 without authentication. No live test messages sent.
+        Removed the incorrect legacy website preview container.
+      timestamp: 2026-09-19T14:43:15Z
+  artifacts:
+    - next/verification/BRAND.md
+    - next/verification/DEPLOYMENT.md
+    - next/web/src/brand-tokens.css
+  completed_at: 2026-09-19T14:43:15Z
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:codex
+      reason: Correct the redesign target to the live chat application
+      timestamp: 2026-09-19T14:31:47Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:codex
+      reason: Brand applied to the current chat frontend; local build and nine browser regressions pass, deployment next
+      timestamp: 2026-09-19T14:40:00Z
+    - from: to_be_tested
+      to: done
+      by: agent:codex
+      reason: Production deployment finished; healthy app and new public frontend assets verified
+      timestamp: 2026-09-19T14:43:15Z
+
 - id: SITE-001
   type: investigate
   state: done

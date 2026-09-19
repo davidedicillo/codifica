@@ -87,10 +87,12 @@ test("channel creation, posting, docs revision and archive survive reload", asyn
     .getByRole("button", { name: "Create channel", exact: true })
     .click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Channel name").fill(`Product ${Date.now()}`);
+  const channelName = `Product ${Date.now()}`;
+  await dialog.getByLabel("Channel name").fill(channelName);
   await dialog
     .getByRole("button", { name: "Create channel", exact: true })
     .click();
+  await expect(page.getByRole("heading", { name: channelName, exact: true }).first()).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Connect an agent", exact: true }),
   ).toBeVisible();
@@ -379,11 +381,13 @@ test("invited collaborator sees history and does not receive owner controls", as
   await page
     .getByRole("button", { name: "Create channel", exact: true })
     .click();
-  await page.getByLabel("Channel name").fill(`Shared ${Date.now()}`);
+  const channelName = `Shared ${Date.now()}`;
+  await page.getByLabel("Channel name").fill(channelName);
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Create channel", exact: true })
     .click();
+  await expect(page.getByRole("heading", { name: channelName, exact: true }).first()).toBeVisible();
   await page
     .getByRole("textbox", { name: "Message", exact: true })
     .fill("Written before Enrico joined.");

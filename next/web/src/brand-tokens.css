@@ -1,0 +1,102 @@
+/* Codifica identity v1.0 · 2026-09-19
+   Brand primitives are fixed. Semantic UI tokens are the recommended implementation.
+   Load this file before application CSS. It intentionally adds no global resets. */
+:root {
+  --cd-cobalt: #3046D3;
+  --cd-coral: #F47B73;
+  --cd-warm-white: #FAF8F0;
+  --cd-cobalt-hover: #263AB5;
+  --cd-cobalt-active: #1F3094;
+  --cd-cobalt-tint: #EEF0FF;
+  --cd-coral-tint: #FFF0ED;
+  --cd-ink: #242634;
+  --cd-muted: #606478;
+  --cd-line: #DBDDE5;
+  --cd-control-line: #85899B;
+  --cd-bg: var(--cd-warm-white);
+  --cd-surface: #FFFFFF;
+  --cd-surface-subtle: #F0F1F6;
+  --cd-text: var(--cd-ink);
+  --cd-text-muted: var(--cd-muted);
+  --cd-border: var(--cd-line);
+  --cd-border-control: var(--cd-control-line);
+  --cd-action: var(--cd-cobalt);
+  --cd-action-hover: var(--cd-cobalt-hover);
+  --cd-action-active: var(--cd-cobalt-active);
+  --cd-on-action: #FFFFFF;
+  --cd-link: var(--cd-cobalt);
+  --cd-selected-bg: var(--cd-cobalt-tint);
+  --cd-selected-text: var(--cd-cobalt);
+  --cd-focus: var(--cd-cobalt);
+  --cd-success: #176244;
+  --cd-success-bg: #E8F4ED;
+  --cd-warning: #805000;
+  --cd-warning-bg: #FFF2D5;
+  --cd-danger: #A1263D;
+  --cd-danger-bg: #FCECEF;
+  --cd-on-danger: #FFFFFF;
+  --cd-disabled-bg: #EAEBF0;
+  --cd-disabled-text: #606478;
+  --cd-font: 'Source Sans 3', 'Segoe UI', sans-serif;
+  --cd-mono: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --cd-text-caption: .8125rem;
+  --cd-text-small: .875rem;
+  --cd-text-body: 1rem;
+  --cd-text-lead: 1.25rem;
+  --cd-text-h3: 1.5rem;
+  --cd-text-h2: 2rem;
+  --cd-text-h1: clamp(2rem, 4vw, 2.5rem);
+  --cd-text-display: clamp(2.5rem, 6vw, 4.5rem);
+  --cd-space-1: .25rem;
+  --cd-space-2: .5rem;
+  --cd-space-3: .75rem;
+  --cd-space-4: 1rem;
+  --cd-space-6: 1.5rem;
+  --cd-space-8: 2rem;
+  --cd-space-12: 3rem;
+  --cd-space-16: 4rem;
+  --cd-space-24: 6rem;
+  --cd-radius-control: .5rem;
+  --cd-radius-panel: .75rem;
+  --cd-radius-dialog: 1rem;
+  --cd-radius-badge: 999px;
+  --cd-control-height: 2.75rem;
+  --cd-page-max: 75rem;
+  --cd-reading-max: 65ch;
+  --cd-shadow-overlay: 0 12px 32px rgb(36 38 52 / .14);
+  --cd-duration-fast: 120ms;
+  --cd-duration-base: 180ms;
+  --cd-duration-enter: 240ms;
+  --cd-ease: cubic-bezier(.2, .8, .2, 1);
+}
+/* Opt in on the app root or a contained preview; never recolor logo primitives. */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --cd-bg: #171A29;
+  --cd-surface: #22263A;
+  --cd-surface-subtle: #2C3148;
+  --cd-text: #FAF8F0;
+  --cd-text-muted: #BAC0D4;
+  --cd-border: #41485F;
+  --cd-border-control: #7D88A8;
+  --cd-action: #A5B4FF;
+  --cd-action-hover: #BEC8FF;
+  --cd-action-active: #8FA1FA;
+  --cd-on-action: #171A29;
+  --cd-link: #A5B4FF;
+  --cd-selected-bg: #303B70;
+  --cd-selected-text: #D6DDFF;
+  --cd-focus: #A5B4FF;
+  --cd-success: #9DDFC0;
+  --cd-success-bg: #193B30;
+  --cd-warning: #F0D38B;
+  --cd-warning-bg: #40351C;
+  --cd-danger: #FFB4C0;
+  --cd-danger-bg: #4D2431;
+  --cd-on-danger: #171A29;
+  --cd-disabled-bg: #34394D;
+  --cd-disabled-text: #BAC0D4;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --cd-duration-fast: 0ms; --cd-duration-base: 0ms; --cd-duration-enter: 0ms; }
+}

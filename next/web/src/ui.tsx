@@ -22,12 +22,14 @@ export function Markdown({ children }: { children: string }) {
 export function Brand() {
   return (
     <span className="brand">
-      <span className="brand-mark" aria-hidden="true">
-        c<span>·</span>
-      </span>
-      codifica
+      <img src="/brand/logo.png" alt="Codifica" width="2073" height="758" />
     </span>
   );
+}
+export function ConversationMotif() {
+  return <span className="conversation-motif" aria-hidden="true">
+    <span /><span /><span /><span /><span /><span />
+  </span>;
 }
 export function Avatar({
   name,
