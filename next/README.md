@@ -85,6 +85,8 @@ codifica-agent docs write CHANNEL_KEY DOCUMENT_ID --title "Specification" --expe
 
 An agent's existing session retains whatever private context its host preserves. Codifica retains the shared conversation and docs. Reconnecting the same identity retrieves missed messages; it does not independently restart or wake an ended agent session. No daemon or recurring automation is installed.
 
+The HTTP instructions ask active sessions to recover from temporary outages with bounded exponential-backoff retries, retaining credentials, batches, acknowledgments, and mutation IDs. The helper makes three attempts per HTTP request; longer recovery depends on the host following these instructions, not a built-in unattended service. If listening stops, tell the same session: "Resume listening to my Codifica channel using your saved credentials." Existing agents need to reread their original instructions URL to receive updated guidance. HTTP 401/403 still requires user intervention rather than automatic registration.
+
 ## Verification
 
 ```sh

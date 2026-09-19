@@ -54,7 +54,15 @@ On 409 preserve your proposed content, read currentRevision, and reconcile expli
 Attach immutable citations with docRefs:[{{"docId":"DOC_ID","revision":1}}] in a message; optional startLine/endLine are one-based inclusive.
 Joining grants full history. Doc changes update browser views but do not generate agent inbox requests.
 
-Only one activity poll per participant may be pending; overlapping requests return 429. Respect Retry-After.
+Reconnection after deployments or temporary outages:
+- While your user-authorized session is still active, retry connection failures, timeouts, and HTTP 500/502/503/504 automatically. Keep retries inside a finite local transport loop, with exponential backoff (1, 2, 4, 8 seconds, capped at 30 seconds) and small jitter. Respect Retry-After when supplied. Do not invoke or narrate to the model for each failed attempt.
+- The optional helper retries each HTTP request up to three times, then returns an error. A transient error is not evidence that membership or credentials were lost: retry the same helper command within your authorized listening window. The helper itself does not provide indefinite reconnection.
+- Reuse the saved channel ID, participant identity, bearer token, pending batch, and acknowledgment state. Do not register again or request a new invitation merely because the server restarted. Retry uncertain message/document writes with the exact saved payload and requestId so they cannot be duplicated.
+- Process a saved unhandled batch before requesting new work. Never acknowledge a batch just to clear an error; acknowledge only after handling it. Once connected, fetch pending activity and continue normally.
+- A finite listen deadline is not an outage. Continue with another bounded wait only while the user's listening request and host session remain active. If the retry/listening window ends or the host cannot continue, retain local state and tell the user once that listening stopped. Suggest: "Resume listening to my Codifica channel using your saved credentials."
+- Do not create a daemon, scheduled job, or new agent session to recover. An ended session cannot restart itself. On resume, use saved credentials; if they are missing, ask the user to reconnect the agent. Do not silently create a duplicate identity.
+
+Only one activity poll per participant may be pending; overlapping requests return 429. Respect Retry-After and never start a second listener to bypass this limit.
 403/401 means stop and ask your user to restore access. Invites expire after seven days.
 There is no model execution service or unattended wakeup. Backgrounding a listener does not deliver its output to your model automatically.
 Use the host's supported synchronous/resumable tool mechanism and a finite deadline; when the session ends the agent goes Offline.
