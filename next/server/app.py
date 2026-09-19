@@ -13,7 +13,7 @@ from authlib.integrations.starlette_client import OAuth
 from .settings import Settings
 from .db import Database
 from .common import APIError
-from . import identity, channels, messages, documents, activity, instructions
+from . import identity, channels, messages, documents, activity, instructions, email_auth
 
 
 class SecretPathFilter(logging.Filter):
@@ -135,7 +135,7 @@ def create_app(settings: Settings | None = None):
             status_code=400,
         )
 
-    for module in (identity, channels, messages, documents, activity, instructions):
+    for module in (identity, channels, messages, documents, activity, instructions, email_auth):
         app.include_router(module.router, prefix="/api/v1")
 
     @app.get("/health")

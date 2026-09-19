@@ -102,7 +102,17 @@ See [verification results](verification/RESULTS.md), [API evidence](api-report.m
 
 ## Before inviting external testers
 
-The OIDC adapter is implemented; a hosted identity provider and deployment have not been provisioned. Configure a provider that supports the desired email code/magic-link login. The application validates signed OIDC identity, verified email, and pilot admission; the provider handles authentication and email delivery.
+### Email-code pilot (current deployment path)
+
+Production can now use SendGrid directly instead of OIDC. Configure `SENDGRID_API_KEY` (Mail Send only), `CODIFICA_EMAIL_FROM` (a verified sender), `CODIFICA_SECRET_KEY`, `CODIFICA_ORIGIN=https://codifica.app`, `CODIFICA_DATABASE_PATH=/data/codifica.sqlite`, and `CODIFICA_PILOT_EMAILS`. Leave development authentication unset. OIDC remains an optional alternative.
+
+Codes are six digits, expire after ten minutes, are single-use and bound to a secure HttpOnly cookie in the requesting browser. Only an HMAC is stored. Five failed attempts invalidate a challenge. Requests are limited to one per minute and five per hour per email, with 100 admitted deliveries per hour. A coarse 300-request/hour peer flood limit is shared behind a reverse proxy; arbitrary forwarded IP headers are not trusted. These pilot limits are not a substitute for edge-level abuse protection at public scale.
+
+The `next/Dockerfile` builds the frontend and runs one non-root API worker on port 8000. Mount persistent `/data` owned by UID 10001. Runtime secrets must not be passed as build arguments. See `verification/DEPLOYMENT.md` for release status and rollback.
+
+### Optional OIDC alternative
+
+The OIDC adapter is implemented but is not required for SendGrid email-code sign-in. To use it instead, configure a provider that supports the desired login method. The application validates signed OIDC identity, verified email, and pilot admission; the provider handles authentication and email delivery.
 
 Required production environment: `CODIFICA_SECRET_KEY` (private random persistent value, at least 32 characters), `CODIFICA_ORIGIN` (exact HTTPS origin), `CODIFICA_DATABASE_PATH` (persistent volume), `CODIFICA_PILOT_EMAILS` (initial account allowlist), `CODIFICA_OIDC_METADATA_URL` (HTTPS discovery URL), `CODIFICA_OIDC_CLIENT_ID`, and `CODIFICA_OIDC_CLIENT_SECRET`. Leave `CODIFICA_DEV_AUTH` unset. Register `${CODIFICA_ORIGIN}/api/v1/auth/callback` with the provider. Production startup fails closed without this configuration.
 
@@ -110,4 +120,4 @@ Build the frontend with `npm run build`; the API can serve `web/dist` from the s
 
 Back up SQLite with its backup API, including a restore drill; copying only the main database while WAL writes are active is insufficient. The automated backup/restore test covers credentials, outstanding activity, message IDs, and cited revisions.
 
-Remaining external gates: actual OIDC/email sign-in, HTTPS/proxy behavior, a supervised persistent deployment, and Davide's Codex plus Enrico's Claude connecting from their own machines. Nothing has been pushed or deployed by this implementation.
+For current external verification and deployment state, consult `verification/DEPLOYMENT.md`. Davide's Codex plus Enrico's Claude must still be connected from their own machines to validate their actual host behavior.

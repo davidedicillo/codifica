@@ -183,7 +183,9 @@ def sign_in(request, response, issuer, subject, email, name):
 @router.get("/auth/config")
 def auth_config(request: Request):
     return dict(
-        devAuth=request.app.state.settings.dev_auth, loginUrl="/api/v1/auth/login"
+        devAuth=request.app.state.settings.dev_auth,
+        emailAuth=bool(request.app.state.settings.sendgrid_api_key and request.app.state.settings.email_from),
+        loginUrl="/api/v1/auth/login"
     )
 
 

@@ -14,6 +14,8 @@ class Settings:
     oidc_client_id: str = ""
     oidc_client_secret: str = ""
     session_seconds: int = 604800
+    sendgrid_api_key: str = ""
+    email_from: str = ""
 
     @classmethod
     def from_env(cls):
@@ -30,6 +32,8 @@ class Settings:
             oidc_metadata_url=os.getenv("CODIFICA_OIDC_METADATA_URL", ""),
             oidc_client_id=os.getenv("CODIFICA_OIDC_CLIENT_ID", ""),
             oidc_client_secret=os.getenv("CODIFICA_OIDC_CLIENT_SECRET", ""),
+            sendgrid_api_key=os.getenv("SENDGRID_API_KEY", ""),
+            email_from=os.getenv("CODIFICA_EMAIL_FROM", ""),
         )
 
     def validate(self):
@@ -52,11 +56,12 @@ class Settings:
                 raise ValueError(
                     "Development authentication requires a loopback HTTP origin"
                 )
-        elif url.scheme != "https" or not all(
-            (self.oidc_metadata_url, self.oidc_client_id, self.oidc_client_secret)
+        elif url.scheme != "https" or not (
+            (self.sendgrid_api_key and self.email_from)
+            or all((self.oidc_metadata_url, self.oidc_client_id, self.oidc_client_secret))
         ):
             raise ValueError(
-                "Production requires HTTPS origin and complete OIDC configuration"
+                "Production requires HTTPS origin and complete email or OIDC configuration"
             )
         if (
             self.oidc_metadata_url

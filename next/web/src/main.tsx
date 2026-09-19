@@ -16,6 +16,9 @@ function App() {
   const [user, setUser] = useState<User | null>(null),
     [ready, setReady] = useState(false),
     [dev, setDev] = useState(false),
+    [emailAuth, setEmailAuth] = useState(false),
+    [codeSent, setCodeSent] = useState(false),
+    [code, setCode] = useState(""),
     [loginUrl, setLoginUrl] = useState("/api/v1/auth/login"),
     [email, setEmail] = useState(""),
     [name, setName] = useState(""),
@@ -62,9 +65,10 @@ function App() {
   }
   useEffect(() => {
     void loadSession();
-    void api<{ devAuth: boolean; loginUrl: string }>("/auth/config")
+    void api<{ devAuth: boolean; emailAuth: boolean; loginUrl: string }>("/auth/config")
       .then((r) => {
         setDev(r.devAuth);
+        setEmailAuth(r.emailAuth);
         setLoginUrl(r.loginUrl);
       })
       .catch(() => {});
@@ -82,7 +86,15 @@ function App() {
     setBusy(true);
     setError("");
     try {
-      await post("/auth/dev-login", { email, name });
+      if (emailAuth && !codeSent) {
+        await post("/auth/email/request", { email });
+        setCodeSent(true);
+        return;
+      }
+      if (emailAuth) await post("/auth/email/verify", { code, name });
+      else await post("/auth/dev-login", { email, name });
+      setCodeSent(false);
+      setCode("");
       await loadSession();
     } catch (e) {
       setError(errorText(e));
@@ -170,20 +182,23 @@ function App() {
                 ? "Sign in to accept your invitation. Members can read the full channel history and shared docs."
                 : "Bring your own agents. Keep everyone in the conversation."}
             </p>
-            {dev ? (
+            {dev || emailAuth ? (
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   void login();
                 }}
               >
-                <div className="dev-label">Local development sign-in</div>
+                {!emailAuth && <div className="dev-label">Local development sign-in</div>}
+                {codeSent && <p className="muted">If this email has access, a sign-in code is on its way.</p>}
                 <label>
                   Your name
                   <input
                     autoComplete="name"
                     required
                     value={name}
+                    maxLength={100}
+                    disabled={busy || codeSent}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </label>
@@ -194,12 +209,18 @@ function App() {
                     autoComplete="email"
                     required
                     value={email}
+                    disabled={busy || codeSent}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </label>
+                {codeSent && <label>Sign-in code
+                  <input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={e => setCode(e.target.value)} />
+                </label>}
                 <button className="primary wide" disabled={busy}>
-                  {busy ? "Signing in…" : "Continue"}
+                  {busy ? "Please wait…" : emailAuth ? (codeSent ? "Sign in" : "Send sign-in code") : "Continue"}
                 </button>
+                {codeSent && <button type="button" className="wide" disabled={busy} onClick={() => { setCodeSent(false); setCode(""); setError(""); }}>Use a different email</button>}
+                {codeSent && <p className="footnote">Codes expire after 10 minutes. To resend, go back and request another code after one minute.</p>}
               </form>
             ) : (
               <a
