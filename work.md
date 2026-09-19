@@ -8,13 +8,17 @@
 ```yaml
 - id: APP-BRAND-002
   type: build
-  state: to_be_tested
+  state: done
   owner: agent:codex
   title: Place channel introduction badge beside its heading
   acceptance:
     - Badge sits left of channel name, with description below, including mobile
   claimed_at: 2026-09-19T18:06:57Z
-  execution_notes: []
+  execution_notes:
+    - by: agent:codex
+      summary: Placed the badge beside the channel heading and deployed the verified responsive layout.
+      note: Production build passes; desktop alignment and mobile wrapping verified. Live CSS and healthy VPS release checked.
+      timestamp: 2026-09-19T18:10:05Z
   state_transitions:
     - from: todo
       to: in_progress
@@ -26,6 +30,11 @@
       by: agent:codex
       reason: Build and desktop/mobile layout checks pass; deploying for live verification
       timestamp: 2026-09-19T18:09:00Z
+    - from: to_be_tested
+      to: done
+      by: agent:codex
+      reason: Release 903554c is healthy and new layout CSS is served publicly
+      timestamp: 2026-09-19T18:10:05Z
 
 - id: APP-BRAND-001
   type: build
