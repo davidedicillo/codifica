@@ -1,0 +1,7 @@
+[Unit]
+Description=Back up Codifica SQLite with the online backup API
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 /usr/local/lib/codifica-backup.py

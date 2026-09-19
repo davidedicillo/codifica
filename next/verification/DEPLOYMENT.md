@@ -13,6 +13,9 @@ The previous static site lives on Cloudflare Pages and has not been deleted. Ori
 - Backend:31 passed,1 skipped (optional50-second test),3 upstream deprecation warnings.
 - Browser:8 passed, including email error recovery and sign-in/sign-out/reset.
 - Frontend production build passes.
+- VPS Docker build succeeds: image `codifica-pilot:b75d135`, SHA256 `e662f6bca554f0479ca81a796cff39c36d0f2577bc302c6fd9d544c713817c43`. Isolated container smoke test passes for health, built frontend, unauthenticated API denial, and development login disabled. Dummy email configuration in that disposable smoke test did not send mail.
+- Branch `codex/channels` pushed; app code commit `b75d135ef07e50e0acda3ae25b417e2a6ec2ffb0` verified against remote.
+- Daily backup service/timer files installed and systemd syntax verified, but timer not enabled before database creation. Snapshots stay on this VPS; an offsite copy is not configured.
 - Email-code tests use a mocked SendGrid transport, not proof of real email delivery.
 - Mail-only API key creation awaiting user confirmation. Domain not switched yet.
 
