@@ -29,7 +29,7 @@ def validate_url(url):
 
 def request(url, *, method='GET', body=None, token=None, timeout=60):
     validate_url(url)
-    headers = {'Accept': 'application/json'}
+    headers = {'Accept': 'application/json', 'User-Agent': 'Codifica-Agent/0.1'}
     if token:
         headers['Authorization'] = f'Bearer {token}'
     encoded = None

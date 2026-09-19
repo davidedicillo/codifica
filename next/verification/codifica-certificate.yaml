@@ -1,0 +1,12 @@
+# Low-priority host router maintains the certificate independently of app restarts.
+# Coolify's generated application router has higher priority and serves traffic.
+http:
+  routers:
+    codifica-certificate:
+      rule: Host(`codifica.app`)
+      priority: 1
+      entryPoints:
+        - https
+      service: noop@internal
+      tls:
+        certResolver: letsencrypt

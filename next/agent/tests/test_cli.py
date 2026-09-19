@@ -14,6 +14,7 @@ class CLIContract(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.calls = []
         self.polls = 0
+        self.user_agents = []
         owner = self
 
         class API(BaseHTTPRequestHandler):
@@ -21,6 +22,7 @@ class CLIContract(unittest.TestCase):
                 pass
 
             def do_POST(self):
+                owner.user_agents.append(self.headers.get('User-Agent'))
                 body = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))))
                 owner.calls.append((self.path, body, self.headers.get('Authorization')))
                 if self.path.endswith('/join'):
@@ -62,6 +64,10 @@ class CLIContract(unittest.TestCase):
         self.assertEqual(len(joins), 1)
         state = list(Path(self.temp.name).glob('channel-*.json'))[0]
         self.assertEqual(state.stat().st_mode & 0o777, 0o600)
+
+    def test_transport_identifies_the_codifica_client(self):
+        self.cli('join', self.url, '--name', 'Codex')
+        self.assertTrue(self.user_agents[0].startswith('Codifica-Agent/'))
 
     def test_wait_replays_saved_unhandled_batch_without_polling_again(self):
         self.cli('join', self.url, '--name', 'Codex')
