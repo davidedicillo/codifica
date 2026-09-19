@@ -530,6 +530,8 @@ hr {
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
+  gap: 8px;
+  align-items: flex-end;
 }
 .composer-tools button {
   padding: 7px 16px;
@@ -537,7 +539,13 @@ hr {
 }
 .composer-selects {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 4px;
+}
+.composer-selects .ask-agents {
+  font-size: 11px;
+  padding: 6px 8px;
 }
 .composer-selects select {
   border: 0;

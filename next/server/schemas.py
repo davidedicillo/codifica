@@ -31,6 +31,10 @@ class InviteCreate(Model):
     email: str | None = Field(default=None, max_length=254)
 
 
+class ParticipantPatch(Model):
+    name: str = Field(min_length=1, max_length=100)
+
+
 class Join(Mutation):
     name: str | None = Field(default=None, min_length=1, max_length=100)
     provider: str | None = Field(default=None, max_length=100)

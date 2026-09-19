@@ -10,7 +10,7 @@ from .identity import (
     add_participant,
     normalized_email,
 )
-from .schemas import ChannelCreate, ChannelPatch, InviteCreate
+from .schemas import ChannelCreate, ChannelPatch, InviteCreate, ParticipantPatch
 
 router = APIRouter()
 
@@ -101,6 +101,31 @@ def participants(channel: str, request: Request):
                     (channel,),
                 )
             ]
+        )
+
+
+@router.patch("/channels/{channel}/participants/{pid}")
+def rename_agent(channel: str, pid: str, payload: ParticipantPatch, request: Request):
+    with request.app.state.db.transaction() as db:
+        caller = member(request, db, channel, mutation=True, human=True, writable=True)
+        target = db.execute(
+            "SELECT * FROM participants WHERE id=? AND channel_id=? AND active=1",
+            (pid, channel),
+        ).fetchone()
+        if not target:
+            reject(404, "NOT_FOUND", "Participant not found")
+        if target["kind"] != "agent":
+            reject(400, "INVALID_ARGUMENT", "Only agent names can be changed here")
+        owner = db.execute("SELECT owner_id FROM channels WHERE id=?", (channel,)).fetchone()[0]
+        if caller["user_id"] != owner and target["invited_by"] != caller["id"]:
+            reject(403, "FORBIDDEN", "Only the owner or inviting member can rename this agent")
+        name = payload.name.strip()
+        if not name:
+            reject(400, "INVALID_ARGUMENT", "Agent name is required")
+        db.execute("UPDATE participants SET name=? WHERE id=?", (name, pid))
+        emit(db, channel, "participants", dict(participantId=pid, renamed=True))
+        return public_participant(
+            db.execute("SELECT * FROM participants WHERE id=?", (pid,)).fetchone(), request.app
         )
 
 

@@ -9,7 +9,7 @@ from server.app import create_app
 def test_durable_batches_ack_retry_and_restart(api, channel, settings):
     a, headers = agent(api, channel)
     for n in range(11):
-        assert send(api, channel, body=str(n)).status_code == 200
+        assert send(api, channel, body=str(n), mentions=[a["participant"]["id"]]).status_code == 200
     path = f"/api/v1/channels/{channel}/activity?wait=0"
     first = api.get(path, headers=headers).json()
     assert len(first["activities"]) == 10 and first["remainingUnread"] == 1
@@ -56,7 +56,7 @@ async def test_wait_wakeup_concurrent_poll_and_revocation(api, app, channel):
         held = asyncio.create_task(client.get(path))
         await asyncio.sleep(0.05)
         assert (await client.get(path)).status_code == 429
-        await asyncio.to_thread(send, api, channel, body="Wake")
+        await asyncio.to_thread(send, api, channel, body="Wake", mentions=[a["participant"]["id"]])
         result = await held
         assert (
             result.status_code == 200
@@ -93,12 +93,12 @@ async def test_cancel_releases_poll_and_empty_ack_survives_new_message(
             "activities": [],
             "remainingUnread": 0,
         }
-        await asyncio.to_thread(send, api, channel, body="One")
+        await asyncio.to_thread(send, api, channel, body="One", mentions=[a["participant"]["id"]])
         first = (await client.get(path, params={"wait": 0})).json()
         assert (
             await client.get(path, params={"wait": 0, "ackBatch": first["batchId"]})
         ).json()["batchId"] is None
-        await asyncio.to_thread(send, api, channel, body="Two")
+        await asyncio.to_thread(send, api, channel, body="Two", mentions=[a["participant"]["id"]])
         second = (
             await client.get(path, params={"wait": 0, "ackBatch": first["batchId"]})
         ).json()

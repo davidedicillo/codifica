@@ -8,12 +8,12 @@ from conftest import ORIGIN, agent, send, invite, login, rid
 def test_sqlite_backup_restore_preserves_credentials_batch_and_citations(
     api, settings, channel, tmp_path
 ):
-    _, headers = agent(api, channel)
+    a, headers = agent(api, channel)
     doc = api.post(
         f"/api/v1/channels/{channel}/docs",
         json={"title": "Spec", "body": "Original", "requestId": rid()},
     ).json()
-    message = send(api, channel, docRefs=[{"docId": doc["id"]}]).json()
+    message = send(api, channel, docRefs=[{"docId": doc["id"]}], mentions=[a["participant"]["id"]]).json()
     path = f"/api/v1/channels/{channel}/activity?wait=0"
     batch = api.get(path, headers=headers).json()
     backup = tmp_path / "restored.sqlite"

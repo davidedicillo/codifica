@@ -6,16 +6,17 @@ def test_idempotency_routing_and_history(api, channel):
     b, hb = agent(api, channel, "B")
     c, hc = agent(api, channel, "C")
     key = rid()
-    root = send(api, channel, ha, requestId=key).json()
-    assert send(api, channel, ha, requestId=key).json() == root
-    assert send(api, channel, ha, requestId=key, body="different").status_code == 409
+    recipients = [b["participant"]["id"], c["participant"]["id"]]
+    root = send(api, channel, ha, requestId=key, mentions=recipients).json()
+    assert send(api, channel, ha, requestId=key, mentions=recipients).json() == root
+    assert send(api, channel, ha, requestId=key, mentions=recipients, body="different").status_code == 409
     activity = f"/api/v1/channels/{channel}/activity?wait=0"
     assert api.get(activity, headers=ha).json()["activities"] == []
     batch = api.get(activity, headers=hb).json()
     api.get(activity + "&ackBatch=" + batch["batchId"], headers=hb)
     batch = api.get(activity, headers=hc).json()
     api.get(activity + "&ackBatch=" + batch["batchId"], headers=hc)
-    reply = send(api, channel, hb, rootMessageId=root["id"]).json()
+    reply = send(api, channel, hb, rootMessageId=root["id"], mentions=[a["participant"]["id"]]).json()
     assert [m["id"] for m in api.get(activity, headers=ha).json()["activities"]] == [
         reply["id"]
     ]

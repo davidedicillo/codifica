@@ -80,13 +80,14 @@ def send(channel: str, payload: MessageCreate, request: Request):
             reject(429, "RATE_LIMITED", "Send limit is 60 messages per minute")
         if payload.rootMessageId:
             root_exists(db, channel, payload.rootMessageId)
-        active = {
-            r["id"]
+        active_people = {
+            r["id"]: r["kind"]
             for r in db.execute(
-                "SELECT id FROM participants WHERE channel_id=? AND active=1",
+                "SELECT id,kind FROM participants WHERE channel_id=? AND active=1",
                 (channel,),
             )
         }
+        active = set(active_people)
         if any(pid not in active for pid in payload.mentions):
             reject(
                 400,
@@ -127,6 +128,11 @@ def send(channel: str, payload: MessageCreate, request: Request):
         else:
             recipients = active
         for pid in recipients - {person["id"]}:
+            # Keep shared history complete, but only wake models for actionable
+            # messages. Agent replies never implicitly wake other agents.
+            if active_people[pid] == "agent" and pid not in payload.mentions:
+                if not payload.rootMessageId or person["kind"] != "human":
+                    continue
             db.execute(
                 "INSERT INTO deliveries(participant_id,message_id,sequence) VALUES (?,?,?)",
                 (pid, message_id, sequence),

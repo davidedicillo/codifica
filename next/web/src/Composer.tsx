@@ -64,7 +64,7 @@ export function Composer({
     }
   }
   useEffect(() => {
-    if (body || pending.current) persist();
+    if (body || mentions.length || docRefs.length || pending.current) persist();
     else sessionStorage.removeItem(storageKey);
   }, [body, mentions, docRefs]);
   async function send() {
@@ -163,6 +163,12 @@ export function Composer({
       )}
       <div className="composer-tools">
         <div className="composer-selects">
+          <button type="button" className="ask-agents"
+            disabled={disabled || busy || !!pending.current || !participants.some((p) => p.kind === "agent")}
+            title="Select all current agents. Only active sessions can respond."
+            onClick={() => setMentions((v) => [...new Set([...v, ...participants.filter((p) => p.kind === "agent").map((p) => p.id)])])}>
+            Ask all agents
+          </button>
           <select
             aria-label="Mention participant"
             disabled={disabled || busy || !!pending.current}

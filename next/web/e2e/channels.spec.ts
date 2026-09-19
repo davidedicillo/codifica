@@ -21,6 +21,64 @@ async function createChannel(page: Page, name: string) {
     page.getByRole("heading", { name, exact: true }).first(),
   ).toBeVisible();
 }
+test("named agents can be renamed and all-agent requests reach only selected identities", async ({ page }) => {
+  await login(page, "davide@example.com", "Davide");
+  await createChannel(page, `Agent controls ${Date.now()}`);
+  const agents: { token: string; participant: { id: string } }[] = [];
+  for (const name of ["Davide's Codex", "Enrico's Claude"]) {
+    await page.getByRole("button", { name: "Connect an agent", exact: true }).click();
+    await page.getByLabel("Agent name", { exact: true }).fill(name);
+    await page.getByRole("button", { name: "Create connection prompt" }).click();
+    const prompt = await page.getByLabel("Paste this into your agent").inputValue();
+    expect(prompt).toContain(JSON.stringify(name));
+    const instructions = prompt.match(/https?:\/\/[^\s]+\/instructions/)![0];
+    const response = await page.request.post(instructions.replace(/\/instructions$/, "/join"), {
+      data: { name, provider: name.includes("Codex") ? "openai" : "anthropic", requestId: crypto.randomUUID() },
+    });
+    expect(response.status()).toBe(200);
+    agents.push(await response.json());
+    await page.getByRole("button", { name: "Close dialog" }).click();
+  }
+  await page.getByRole("button", { name: "Show participants" }).click();
+  await page.getByRole("button", { name: "Rename Davide's Codex", exact: true }).click();
+  await page.getByLabel("Agent name", { exact: true }).fill("Backend reviewer");
+  await page.getByRole("button", { name: "Save name", exact: true }).click();
+  await expect(page.locator(".person").getByText("Backend reviewer", { exact: true })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "Show participants" }).click();
+  await expect(page.locator(".person").getByText("Backend reviewer", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Close participants" }).click();
+  const channel = await page.evaluate(() => sessionStorage.getItem("codifica:active"));
+  const inbox = async (token: string) => (await page.request.get(`/api/v1/channels/${channel}/activity?wait=0`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })).json();
+  await page.getByRole("textbox", { name: "Message", exact: true }).fill("Just chatting");
+  await page.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(page.locator("article").getByText("Just chatting", { exact: true })).toBeVisible();
+  for (const a of agents) expect((await inbox(a.token)).batchId).toBeNull();
+  await page.getByRole("button", { name: "Ask all agents", exact: true }).click();
+  await expect(page.locator(".chips")).toContainText("Backend reviewer");
+  await expect(page.locator(".chips")).toContainText("Enrico's Claude");
+  await page.reload();
+  await expect(page.locator(".chips")).toContainText("Backend reviewer");
+  await page.getByRole("textbox", { name: "Message", exact: true }).fill("Who's here?");
+  // Recipient choices and draft survive a reload before sending.
+  await page.reload();
+  await expect(page.locator(".chips")).toContainText("Backend reviewer");
+  await page.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(page.locator("article").getByText("Who's here?", { exact: true })).toBeVisible();
+  for (const a of agents) {
+    const batch = await inbox(a.token);
+    expect(batch.activities).toHaveLength(1);
+    expect(batch.activities[0].body).toBe("Who's here?");
+    expect(batch.activities[0].mentions.sort()).toEqual(agents.map(a => a.participant.id).sort());
+  }
+  await expect(page.locator(".chips")).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole("button", { name: "Ask all agents" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: "../verification/agent-controls-mobile.png", fullPage: true });
+});
 test("channel creation, posting, docs revision and archive survive reload", async ({
   page,
 }) => {

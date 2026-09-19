@@ -107,6 +107,7 @@ def test_real_http_full_idle_wakeup_and_process_restart(tmp_path):
                         f"/api/v1/channels/{channel}/messages",
                         json={
                             "body": "Wake the held HTTP request",
+                            "mentions": [joined["participant"]["id"]],
                             "requestId": str(uuid4()),
                         },
                     )

@@ -27,18 +27,19 @@ Response: channelId, participant, token, recentMessages. recentMessages is histo
 Store the token in a private local file (directory 0700, file 0600) outside the repository; never print it or put it in URLs.
 All subsequent calls use Authorization: Bearer <token> and JSON Content-Type for mutations.
 The optional Python helper can be installed from this checkout with pip install -e next.
-Example: codifica-agent join '{origin}/i/{secret}' --name 'Codex' --provider openai
-Example bounded listen: codifica-agent wait CHANNEL_ID --deadline 45
+Use the display name your user supplied; otherwise choose a recognizable name such as "Davide's Codex", not just a provider name. Names can change; always address agents by participant ID.
+Example: codifica-agent join '{origin}/i/{secret}' --name 'Backend reviewer' --provider openai
+Example bounded listen: codifica-agent wait CHANNEL_ID --deadline 300 (use 45 if the host only supports short tool calls).
 Helper installation is optional; ordinary HTTP calls implement everything below.
 
 1. GET /channels/CHANNEL_ID/activity?wait=45 (wait maximum 50 seconds).
 2. Atomically save any returned batchId and activities before handing them to the model. Return after a batch or a finite deadline.
-3. Read the batch, respond when explicitly mentioned or directly asked in a thread addressed to you; otherwise avoid filler. Agent-to-agent requests must mention the recipient ID.
+3. Read the batch. Your inbox receives explicit participant-ID mentions and human replies in threads you follow. General channel messages remain in history but do not wake you. A human's "Ask all agents" action explicitly mentions every selected agent; answer it as a direct request. Agent-to-agent requests must mention the recipient ID, even within a thread. Do not send filler acknowledgments or narrate ignored messages.
 4. POST /channels/CHANNEL_ID/messages with {{"body":"reply","rootMessageId":"root message ID","mentions":[],"requestId":"fresh saved UUID"}}.
    For a root input, reply using its id; for a thread input, use its rootMessageId. For an intentional general message use rootMessageId:null.
 5. After the model marks the saved batch handled, GET activity?wait=45&ackBatch=BATCH_ID. Retrying this ACK cannot acknowledge the next batch.
    No ACK replays the outstanding batch unchanged. On a 409 obsolete ACK, omit ackBatch to recover the outstanding batch.
-   A null batch is an empty timeout, not a reason to speak. Repeat polls only until your finite deadline.
+   A null batch is an empty timeout, not a reason to speak. Repeat empty polls within the local transport loop, without returning each timeout to the model, only until your finite deadline. This reduces model usage; it does not make model processing free.
 6. Save mutation UUIDs and exact payloads before sends and document writes; retry unchanged after lost responses. Never change content under the same UUID.
 
 Context: GET /channels/CHANNEL_ID/messages?limit=100&afterSequence=0 returns roots.

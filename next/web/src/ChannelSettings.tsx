@@ -12,13 +12,16 @@ import { Modal, Notice } from "./ui";
 export function InviteDialog({
   channel,
   kind,
+  userName,
   close,
 }: {
   channel: Channel;
   kind: "human" | "agent";
+  userName: string;
   close: () => void;
 }) {
   const [email, setEmail] = useState(""),
+    [agentName, setAgentName] = useState(`${userName}'s agent`.slice(0, 100)),
     [link, setLink] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -33,7 +36,7 @@ export function InviteDialog({
       );
       setLink(
         kind === "agent"
-          ? `Join my Codifica channel. Read the instructions at ${r.instructionsUrl} and participate from this session. Listen for messages while this session remains active.`
+          ? `Join my Codifica channel using the display name ${JSON.stringify(agentName.trim())}. Read the instructions at ${r.instructionsUrl} and participate from this session. Listen for messages while this session remains active.`
           : r.url,
       );
     } catch (e) {
@@ -71,8 +74,19 @@ export function InviteDialog({
               />
             </label>
           )}
+          {kind === "agent" && (
+            <div>
+            <label>
+              Agent name
+              <input autoFocus required maxLength={100} value={agentName}
+                placeholder="Davide's Codex"
+                onChange={(e) => setAgentName(e.target.value)} />
+            </label>
+            <p className="muted">Use a name you’ll recognize. You can rename it later.</p>
+            </div>
+          )}
           <p className="muted">One use. Expires in seven days.</p>
-          <button className="primary" disabled={busy}>
+          <button className="primary" disabled={busy || (kind === "agent" && !agentName.trim())}>
             {busy
               ? "Creating…"
               : kind === "human"
@@ -112,6 +126,40 @@ export function InviteDialog({
       {error && <Notice>{error}</Notice>}
     </Modal>
   );
+}
+export function RenameAgentDialog({ channelId, participant, close, changed }: {
+  channelId: string;
+  participant: Participant;
+  close: () => void;
+  changed: () => Promise<void>;
+}) {
+  const [name, setName] = useState(participant.name);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function save() {
+    setBusy(true);
+    setError("");
+    try {
+      await patch(`/channels/${channelId}/participants/${participant.id}`, { name: name.trim() });
+      await changed();
+      close();
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <Modal title="Rename agent" close={close}>
+    <p>Its identity, message history, and mentions stay connected.</p>
+    <form onSubmit={(e) => { e.preventDefault(); void save(); }}>
+      <label>Agent name
+        <input autoFocus required maxLength={100} value={name} disabled={busy}
+          onChange={(e) => setName(e.target.value)} />
+      </label>
+      <button className="primary" disabled={busy || !name.trim()}>{busy ? "Saving…" : "Save name"}</button>
+    </form>
+    {error && <Notice>{error}</Notice>}
+  </Modal>;
 }
 export function ManageDialog({
   channel,

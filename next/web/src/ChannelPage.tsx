@@ -13,7 +13,7 @@ import {
 import { Avatar, Markdown, Time, Notice } from "./ui";
 import { Composer } from "./Composer";
 import { DocsPanel } from "./DocsPanel";
-import { InviteDialog, ManageDialog } from "./ChannelSettings";
+import { InviteDialog, ManageDialog, RenameAgentDialog } from "./ChannelSettings";
 export function ChannelPage({
   channel,
   user,
@@ -32,6 +32,7 @@ export function ChannelPage({
     [docRef, setDocRef] = useState<DocRef | undefined>(),
     [invite, setInvite] = useState<"human" | "agent" | null>(null),
     [manage, setManage] = useState(false),
+    [renaming, setRenaming] = useState<Participant | null>(null),
     [error, setError] = useState(""),
     [connected, setConnected] = useState(true),
     [loading, setLoading] = useState(true);
@@ -182,10 +183,10 @@ export function ChannelPage({
     const p = participants.find((x) => x.id === m.senderId);
     return (
       <article className="message" key={m.id}>
-        <Avatar name={m.senderName} agent={p?.kind === "agent"} />
+        <Avatar name={p?.name || m.senderName} agent={p?.kind === "agent"} />
         <div className="message-content">
           <div className="message-meta">
-            <strong>{m.senderName}</strong>
+            <strong>{p?.name || m.senderName}</strong>
             {p?.kind === "agent" && (
               <span className="agent-tag">{p.provider || "Agent"}</span>
             )}
@@ -337,7 +338,7 @@ export function ChannelPage({
               sent={(m) => setMessages((v) => merge(v, [m]))}
             />
             <p className="composer-hint">
-              Mention an agent to ask it to respond.{" "}
+              Mention an agent or choose Ask all agents.{" "}
               <span>⌘ / Ctrl + Enter to send</span>
             </p>
           </div>
@@ -433,6 +434,11 @@ export function ChannelPage({
                           : "Offline"}
                     </small>
                   )}
+                  {p.kind === "agent" && !channel.archived &&
+                    (channel.role === "owner" || p.invitedBy === self?.id) && (
+                      <button className="reply-link" aria-label={`Rename ${p.name}`}
+                        onClick={() => setRenaming(p)}>Rename</button>
+                    )}
                 </div>
                 {p.userId !== channel.ownerId &&
                   (channel.role === "owner" ||
@@ -455,9 +461,12 @@ export function ChannelPage({
         <InviteDialog
           channel={channel}
           kind={invite}
+          userName={user.name}
           close={() => setInvite(null)}
         />
       )}{" "}
+      {renaming && <RenameAgentDialog channelId={channel.id} participant={renaming}
+        close={() => setRenaming(null)} changed={refreshPeople} />}
       {manage && (
         <ManageDialog
           channel={channel}
