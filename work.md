@@ -8,7 +8,7 @@
 ```yaml
 - id: APP-BRAND-001
   type: build
-  state: in_progress
+  state: to_be_tested
   owner: agent:codex
   title: Apply the selected identity to the current chat application
   description: User clarified that the design guide applies to yesterday's chat app, with VPS deployment requested.
@@ -16,7 +16,7 @@
     - Current chat, docs, people, dialogs, and sign-in use the selected brand system
     - Existing chat and agent functionality remains intact
     - Responsive frontend is verified and deployed to codifica.app
-  claimed_at: 2026-09-19T08:34:00Z
+  claimed_at: 2026-09-19T14:31:47Z
   execution_notes: []
   artifacts: []
   state_transitions:
@@ -24,7 +24,12 @@
       to: in_progress
       by: agent:codex
       reason: Correct the redesign target to the live chat application
-      timestamp: 2026-09-19T08:34:00Z
+      timestamp: 2026-09-19T14:31:47Z
+    - from: in_progress
+      to: to_be_tested
+      by: agent:codex
+      reason: Brand applied to the current chat frontend; local build and nine browser regressions pass, deployment next
+      timestamp: 2026-09-19T14:40:00Z
 
 - id: SITE-001
   type: investigate
