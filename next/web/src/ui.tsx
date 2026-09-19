@@ -6,7 +6,9 @@ export function Markdown({ children }: { children: string }) {
       <ReactMarkdown
         skipHtml
         components={{
-          a: ({ children, href }) => (
+          a: ({ children, href }) => /^#mention-(all|[a-f0-9-]{36})$/.test(href || "") ? (
+            <span className="inline-mention">{children}</span>
+          ) : (
             <a href={href} target="_blank" rel="noopener noreferrer">
               {children}
             </a>

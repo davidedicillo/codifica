@@ -193,9 +193,9 @@ export function ChannelPage({
             )}
             <Time value={m.createdAt} />
           </div>
-          {m.mentions.length > 0 && (
+          {m.mentions.length > 0 && !m.body.includes("](#mention-all)") && (
             <div className="mentions">
-              {m.mentions.map((id) => (
+              {m.mentions.filter((id) => !m.body.includes(`](#mention-${id})`)).map((id) => (
                 <span key={id}>
                   @
                   {participants.find((x) => x.id === id)?.name ||
