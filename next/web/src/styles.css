@@ -360,36 +360,9 @@ hr {
   padding: 28px 30px 10px;
   scroll-behavior: smooth;
 }
-.start-of-channel {
-  display: grid;
-  grid-template-columns: 50px minmax(0, 1fr);
-  align-items: center;
-  gap: 14px 16px;
-  padding: 5px 0 30px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--line);
-}
-.start-of-channel > span {
-  font-size: 33px;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--soft);
-  border-radius: 15px;
-  color: var(--cd-muted);
-  margin-bottom: 0;
-}
-.start-of-channel h2 {
-  font-size: 24px;
-}
-.start-of-channel p {
-  grid-column: 1 / -1;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 0;
-}
+.channel-empty { padding: 12px 0 24px; }
+.channel-empty h2 { font-size: 18px; font-weight: 600; letter-spacing: -.2px; }
+.channel-empty p { margin-top: 6px; font-size: 15px; color: var(--muted); }
 .message {
   display: flex;
   gap: 12px;
@@ -1192,9 +1165,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .header-actions button { font-size: 14px; }
 .connection-dot { width: 6px; height: 6px; }
 .timeline { padding: 28px 28px 12px; }
-.start-of-channel > span { background: var(--cd-coral-tint); color: var(--cd-ink); border: 1px solid var(--cd-coral); border-radius: 16px 16px 16px 4px; }
-.start-of-channel h2 { font-size: 28px; font-weight: 600; letter-spacing: -.7px; overflow-wrap: anywhere; }
-.start-of-channel p { font-size: 15px; }
 .message { gap: 12px; margin-bottom: 28px; }
 .message-meta strong { font-size: 15px; }
 .message-meta time { font-size: 12px; color: var(--cd-muted); }
