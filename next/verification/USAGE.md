@@ -2,6 +2,9 @@
 
 Google Analytics property tag: `G-3D57Q2FVD8`.
 
+Property: Codifica (`520050281`), account `151346302`.
+[Open GA Realtime](https://analytics.google.com/analytics/web/#/a151346302p520050281/realtime/overview).
+
 GA measures page loads at `https://codifica.app/`. The tag runs in an empty,
 same-origin iframe so enhanced measurement does not observe app forms, private
 links, channel names, document titles, or messages. Its page location is always
@@ -11,6 +14,11 @@ to GA. Google Signals and ad personalization signals are disabled. This setup
 intentionally does not provide campaign attribution, channel navigation,
 engagement duration, or app action counts in GA. Browser blocking can suppress
 GA. Standard GA browser/device/network processing still applies.
+
+Enhanced measurement was turned off in this property's web stream on September
+19, 2026. Standard page views remain enabled. This avoids misleading automatic
+scroll events from the empty frame. GA engagement and active-user figures should
+not be used as product activity metrics; use the private active-account counts.
 
 The app's CSP remains limited to its own scripts and connections. Only the empty
 analytics frame can load Google's script and send GA requests. The tag loads only
@@ -77,6 +85,31 @@ authentication/CSRF, report aggregation, and CSP isolation. Browser tests cover
 the heartbeat and the GA frame's sanitized configuration. A successful GA HTTP
 collection response proves transport, not processing into the owner's reports;
 GA Realtime/DebugView requires access to the Analytics account.
+
+### Live release verification — September 19, 2026
+
+- Deployed application revision: `37e3f36e1e0ef8d8c9e9231124d7eddb1f34e27a`.
+- Coolify deployment: `67f8ef2a-3c2c-4ba7-ae49-18ae9c503c58`, finished; container healthy.
+- Pre-release SQLite backup service completed successfully.
+- 62 backend/agent tests passed, one existing test skipped; 17 browser tests
+  passed. Build/typecheck passed, including after integrating the concurrent
+  conversation-layout release. Existing dependency deprecation warnings remain.
+- Live `/health`, `/analytics.html`, and `/analytics.js` returned HTTP 200 with
+  the intended separate CSP policies.
+- Browser loaded `gtag.js` (200), then sent `page_view` to the existing
+  `G-3D57Q2FVD8` stream (204). Captured event location was
+  `https://codifica.app/`, title `Codifica`, and referrer empty.
+- Verified the matching measurement ID in the signed-in Analytics web stream.
+  Realtime displayed `Codifica` with a `page_view` event after verification.
+- One automatic `scroll` event was observed during the initial verification;
+  enhanced measurement was then disabled. The verification page views and this
+  scroll are synthetic traffic, not evidence of new organic users.
+- Private tracking started at `2026-09-19T18:21:10Z`. Opening the existing
+  authenticated browser session recorded one active account. No synthetic
+  production channels, agent registrations, messages, or documents were created.
+- At verification the pre-existing inventory was one account, one channel,
+  one agent registration, four messages, and zero documents. These inventory
+  counts are separate from the zero new creation events since tracking started.
 
 To disable GA quickly, remove `startPageAnalytics()` from the web entry point and
 redeploy. Rolling back the application code leaves the additive usage tables and
