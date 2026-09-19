@@ -14,7 +14,7 @@ from authlib.integrations.starlette_client import OAuth
 from .settings import Settings
 from .db import Database
 from .common import APIError
-from . import identity, channels, messages, documents, uploads, activity, instructions, email_auth
+from . import identity, channels, messages, documents, uploads, activity, instructions, email_auth, usage
 
 
 class SecretPathFilter(logging.Filter):
@@ -51,14 +51,23 @@ class BoundaryMiddleware:
 
         async def secured_send(message):
             if message["type"] == "http.response.start":
+                analytics_frame = scope['path'] == '/analytics.html'
+                policy = (
+                    "default-src 'none'; script-src 'self' https://www.googletagmanager.com; "
+                    "connect-src https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; "
+                    "img-src https://*.google-analytics.com https://www.googletagmanager.com; "
+                    "frame-ancestors 'self'; base-uri 'none'; form-action 'none'"
+                    if analytics_frame else
+                    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+                )
                 message["headers"] = list(message["headers"]) + [
                     (b"cache-control", b"no-store"),
                     (b"x-content-type-options", b"nosniff"),
                     (b"referrer-policy", b"no-referrer"),
-                    (b"x-frame-options", b"DENY"),
+                    (b"x-frame-options", b"SAMEORIGIN" if analytics_frame else b"DENY"),
                     (
                         b"content-security-policy",
-                        b"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+                        policy.encode(),
                     ),
                 ]
                 if (
@@ -137,7 +146,7 @@ def create_app(settings: Settings | None = None):
             status_code=400,
         )
 
-    for module in (identity, channels, messages, uploads, documents, activity, instructions, email_auth):
+    for module in (identity, channels, messages, uploads, documents, activity, instructions, email_auth, usage):
         app.include_router(module.router, prefix="/api/v1")
 
     @app.get("/health")

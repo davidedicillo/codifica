@@ -11,7 +11,9 @@ import {
 } from "./api";
 import { Brand, ConversationMotif, Avatar, Modal, Notice } from "./ui";
 import { ChannelPage } from "./ChannelPage";
+import { startPageAnalytics, trackActiveAccount } from "./usage";
 import "./styles.css";
+startPageAnalytics();
 function App() {
   const [user, setUser] = useState<User | null>(null),
     [ready, setReady] = useState(false),
@@ -39,6 +41,9 @@ function App() {
   useEffect(() => {
     if (active) sessionStorage.setItem("codifica:active", active);
   }, [active]);
+  useEffect(() => {
+    if (user) return trackActiveAccount();
+  }, [user?.id]);
   const invitation = location.pathname.match(/^\/i\/([^/]+)/)?.[1];
   async function refreshChannels() {
     try {
