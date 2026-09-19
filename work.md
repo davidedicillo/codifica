@@ -8,14 +8,18 @@
 ```yaml
 - id: APP-BRAND-003
   type: build
-  state: to_be_tested
+  state: done
   owner: agent:codex
   title: Remove duplicate channel introduction from conversations
   acceptance:
     - Existing conversations start with messages and empty channels have a compact prompt
     - Full-history disclosure remains in invitation flows
   claimed_at: 2026-09-19T18:14:43Z
-  execution_notes: []
+  execution_notes:
+    - by: agent:codex
+      summary: Removed the duplicate channel introduction and deployed the compact empty-state prompt.
+      note: Build and local populated/empty/mobile checks pass. Live bundle contains the new prompt and excludes the old introduction; health200 and container healthy.
+      timestamp: 2026-09-19T18:18:15Z
   state_transitions:
     - from: todo
       to: in_progress
@@ -27,6 +31,11 @@
       by: agent:codex
       reason: Production build and populated/empty channel browser checks pass, including mobile
       timestamp: 2026-09-19T18:16:00Z
+    - from: to_be_tested
+      to: done
+      by: agent:codex
+      reason: Release 8c48747 is healthy and the updated frontend is served publicly
+      timestamp: 2026-09-19T18:18:15Z
 
 - id: APP-BRAND-002
   type: build
