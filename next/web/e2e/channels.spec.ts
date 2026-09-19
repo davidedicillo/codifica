@@ -21,6 +21,107 @@ async function createChannel(page: Page, name: string) {
     page.getByRole("heading", { name, exact: true }).first(),
   ).toBeVisible();
 }
+test("duplicate names retain the correct identity after deleting a mention", async ({ page }) => {
+  await login(page, 'davide@example.com', 'Davide');
+  await createChannel(page, `Duplicate mentions ${Date.now()}`);
+  const agents = await page.evaluate(async () => {
+    const me = await (await fetch('/api/v1/me')).json();
+    const channel = sessionStorage.getItem('codifica:active');
+    const results = [];
+    for (const provider of ['openai', 'anthropic', 'test2', 'test3', 'test4', 'test5', 'test6', 'test7']) {
+      const invite = await (await fetch(`/api/v1/channels/${channel}/invites`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':me.csrfToken},body:JSON.stringify({kind:'agent'})})).json();
+      results.push(await (await fetch(invite.instructionsUrl.replace('/instructions','/join'), {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:provider.startsWith('test') ? provider : 'Alex',provider,requestId:crypto.randomUUID()})})).json());
+    }
+    return results;
+  });
+  const editor = page.getByRole('textbox', {name:'Message',exact:true});
+  await editor.fill('@Alex');
+  await page.getByRole('option', {name:/Alex openai/}).click();
+  await editor.pressSequentially('@Alex');
+  await page.getByRole('option', {name:/Alex anthropic/}).click();
+  await expect(editor).toHaveValue('@Alex @Alex ');
+  await editor.press('Home');
+  for (let i=0;i<6;i++) await editor.press('Shift+ArrowRight');
+  await editor.press('Backspace');
+  await expect(editor).toHaveValue('@Alex ');
+  const sent = page.waitForResponse(r => r.url().endsWith('/messages') && r.request().method() === 'POST');
+  await page.getByRole('button', {name:'Send',exact:true}).click();
+  const message = await (await sent).json();
+  expect(message.mentions).toEqual([agents[1].participant.id]);
+  expect(message.body).toContain(agents[1].participant.id);
+  await editor.fill('@');
+  for (let i=0;i<9;i++) await editor.press('ArrowDown');
+  expect(await page.getByRole('listbox').evaluate(e => e.scrollTop)).toBeGreaterThan(0);
+  await editor.press('Enter');
+  await expect(editor).toHaveValue('@test7 ');
+  await page.screenshot({path:'../verification/mentions-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  await editor.fill('@');
+  await expect(page.getByRole('listbox')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({path:'../verification/mentions-mobile.png',fullPage:true});
+});
+test("inline mention typeahead selects identities, survives drafts, and removes recipients on deletion", async ({ page }) => {
+  await login(page, "davide@example.com", "Davide");
+  await createChannel(page, `Mentions ${Date.now()}`);
+  const a = await page.evaluate(async () => {
+    const me = await (await fetch('/api/v1/me')).json();
+    const channel = sessionStorage.getItem('codifica:active');
+    const invitation = await (await fetch(`/api/v1/channels/${channel}/invites`, {method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':me.csrfToken}, body:JSON.stringify({kind:'agent'})})).json();
+    return (await fetch(invitation.instructionsUrl.replace('/instructions','/join'), {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Backend reviewer',provider:'openai',requestId:crypto.randomUUID()})})).json();
+  });
+  const editor = page.getByRole('textbox', {name:'Message', exact:true});
+  await editor.fill('Hello @back');
+  await expect(page.getByRole('option', {name:/Backend reviewer/})).toBeVisible();
+  await editor.press('Enter');
+  await expect(editor).toHaveValue('Hello @Backend reviewer ');
+  await expect(page.locator('.mention-highlight')).toContainText('@Backend reviewer');
+  await page.reload();
+  await expect(editor).toHaveValue('Hello @Backend reviewer ');
+  const attempts: string[] = [];
+  await page.route('**/api/v1/channels/*/messages', async route => {
+    if (route.request().method() === 'POST') {
+      attempts.push(route.request().postDataJSON().requestId);
+      if (attempts.length === 1) { await route.fetch(); await route.abort(); return; }
+    }
+    await route.continue();
+  });
+  await page.getByRole('button', {name:'Send',exact:true}).click();
+  await expect(page.getByRole('alert')).toContainText('preserved');
+  await page.reload();
+  await expect(editor).toBeDisabled();
+  await page.getByRole('button', {name:'Retry send',exact:true}).click();
+  expect(attempts).toHaveLength(2);
+  expect(attempts[0]).toBe(attempts[1]);
+  await page.unroute('**/api/v1/channels/*/messages');
+  await expect(page.locator('article .inline-mention')).toHaveText('@Backend reviewer');
+  const channel = await page.evaluate(() => sessionStorage.getItem('codifica:active'));
+  const activity = `/api/v1/channels/${channel}/activity?wait=0`;
+  const batch = await (await page.request.get(activity, {headers:{Authorization:`Bearer ${a.token}`}})).json();
+  expect(batch.activities[0].mentions).toEqual([a.participant.id]);
+  await page.request.get(activity + '&ackBatch=' + batch.batchId, {headers:{Authorization:`Bearer ${a.token}`}});
+  await editor.fill('@');
+  await expect(page.getByRole('option', {name:/All agents/})).toBeVisible();
+  await editor.press('Escape');
+  await expect(page.getByRole('listbox')).toHaveCount(0);
+  await editor.fill('Plain email test@example.com');
+  await expect(page.getByRole('listbox')).toHaveCount(0);
+  await editor.fill('@back');
+  await page.getByRole('option', {name:/Backend reviewer/}).click();
+  await editor.fill('No agent requested');
+  await expect(page.locator('.mention-highlight')).toHaveCount(0);
+  await page.getByRole('button', {name:'Send',exact:true}).click();
+  await expect(page.locator('article').getByText('No agent requested')).toBeVisible();
+  expect((await (await page.request.get(activity, {headers:{Authorization:`Bearer ${a.token}`}})).json()).batchId).toBeNull();
+  await page.getByRole('button', {name:'Open thread',exact:true}).first().click();
+  const reply = page.getByRole('textbox', {name:'Reply',exact:true});
+  await reply.fill('@all');
+  await reply.press('ArrowDown');
+  await reply.press('Enter');
+  await expect(reply).toHaveValue('@All agents ');
+  await page.getByRole('button', {name:'Reply',exact:true}).click();
+  await expect(page.locator('.thread-panel article .inline-mention').last()).toHaveText('@All agents');
+});
 test("named agents can be renamed and all-agent requests reach only selected identities", async ({ page }) => {
   await login(page, "davide@example.com", "Davide");
   await createChannel(page, `Agent controls ${Date.now()}`);
@@ -57,20 +158,20 @@ test("named agents can be renamed and all-agent requests reach only selected ide
   await expect(page.locator("article").getByText("Just chatting", { exact: true })).toBeVisible();
   for (const a of agents) expect((await inbox(a.token)).batchId).toBeNull();
   await page.getByRole("button", { name: "Ask all agents", exact: true }).click();
-  await expect(page.locator(".chips")).toContainText("Backend reviewer");
-  await expect(page.locator(".chips")).toContainText("Enrico's Claude");
+  await expect(page.locator(".mention-highlight")).toHaveText("@All agents");
   await page.reload();
-  await expect(page.locator(".chips")).toContainText("Backend reviewer");
-  await page.getByRole("textbox", { name: "Message", exact: true }).fill("Who's here?");
+  await expect(page.locator(".mention-highlight")).toHaveText("@All agents");
+  await page.getByRole("textbox", { name: "Message", exact: true }).press('End');
+  await page.getByRole("textbox", { name: "Message", exact: true }).pressSequentially("Who's here?");
   // Recipient choices and draft survive a reload before sending.
   await page.reload();
-  await expect(page.locator(".chips")).toContainText("Backend reviewer");
+  await expect(page.locator(".mention-highlight")).toHaveText("@All agents");
   await page.getByRole("button", { name: "Send", exact: true }).click();
-  await expect(page.locator("article").getByText("Who's here?", { exact: true })).toBeVisible();
+  await expect(page.locator("article").filter({hasText:"Who's here?"})).toBeVisible();
   for (const a of agents) {
     const batch = await inbox(a.token);
     expect(batch.activities).toHaveLength(1);
-    expect(batch.activities[0].body).toBe("Who's here?");
+    expect(batch.activities[0].body).toBe("[@All agents](#mention-all) Who's here?");
     expect(batch.activities[0].mentions.sort()).toEqual(agents.map(a => a.participant.id).sort());
   }
   await expect(page.locator(".chips")).toHaveCount(0);

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { MentionEditor, mentionBody, type InlineMention, type MentionEditorHandle } from "./MentionEditor";
 import {
   type DocMeta,
   type DocRef,
@@ -32,6 +33,7 @@ export function Composer({
       return JSON.parse(sessionStorage.getItem(storageKey) || "null") as {
         body: string;
         mentions: string[];
+        inlineMentions?: InlineMention[];
         docRefs: DocRef[];
         pending: { key: string; requestId: string } | null;
       } | null;
@@ -41,6 +43,7 @@ export function Composer({
   });
   const [body, setBody] = useState(recovered?.body || ""),
     [mentions, setMentions] = useState<string[]>(recovered?.mentions || []),
+    [inlineMentions, setInlineMentions] = useState<InlineMention[]>(recovered?.inlineMentions || []),
     [docRefs, setDocRefs] = useState<DocRef[]>(recovered?.docRefs || []),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(
@@ -51,11 +54,12 @@ export function Composer({
   const pending = useRef<{ key: string; requestId: string } | null>(
     recovered?.pending || null,
   );
+  const editor = useRef<MentionEditorHandle>(null);
   function persist() {
     try {
       sessionStorage.setItem(
         storageKey,
-        JSON.stringify({ body, mentions, docRefs, pending: pending.current }),
+        JSON.stringify({ body, mentions, inlineMentions, docRefs, pending: pending.current }),
       );
     } catch {
       setError(
@@ -66,15 +70,15 @@ export function Composer({
   useEffect(() => {
     if (body || mentions.length || docRefs.length || pending.current) persist();
     else sessionStorage.removeItem(storageKey);
-  }, [body, mentions, docRefs]);
+  }, [body, mentions, inlineMentions, docRefs]);
   async function send() {
     if (!body.trim() || busy) return;
     setBusy(true);
     setError("");
     const payload = {
-      body: body.trim(),
+      body: mentionBody(body, inlineMentions).trim(),
       rootMessageId: rootId,
-      mentions,
+      mentions: [...new Set([...mentions, ...inlineMentions.flatMap((m) => m.ids)])],
       docRefs,
     };
     const key = JSON.stringify(payload);
@@ -94,6 +98,7 @@ export function Composer({
       sessionStorage.removeItem(storageKey);
       setBody("");
       setMentions([]);
+      setInlineMentions([]);
       setDocRefs([]);
       sent(m);
     } catch (e) {
@@ -116,8 +121,8 @@ export function Composer({
         void send();
       }}
     >
-      <textarea
-        aria-label={rootId ? "Reply" : "Message"}
+      <MentionEditor ref={editor}
+        label={rootId ? "Reply" : "Message"}
         placeholder={
           disabled
             ? "This channel is archived"
@@ -125,15 +130,10 @@ export function Composer({
               ? "Continue the conversation…"
               : "Write a message. Mention an agent to bring it in."
         }
-        value={body}
+        body={body} mentions={inlineMentions} participants={participants}
         disabled={disabled || busy || (!!error && !!pending.current)}
-        onChange={(e) => setBody(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            void send();
-          }
-        }}
+        change={(text, spans) => { setBody(text); setInlineMentions(spans); }}
+        send={() => void send()}
       />
       {(mentions.length > 0 || docRefs.length > 0) && (
         <div className="chips">
@@ -166,25 +166,16 @@ export function Composer({
           <button type="button" className="ask-agents"
             disabled={disabled || busy || !!pending.current || !participants.some((p) => p.kind === "agent")}
             title="Select all current agents. Only active sessions can respond."
-            onClick={() => setMentions((v) => [...new Set([...v, ...participants.filter((p) => p.kind === "agent").map((p) => p.id)])])}>
+            onClick={() => editor.current?.all()}>
             Ask all agents
           </button>
-          <select
+          <button type="button"
             aria-label="Mention participant"
             disabled={disabled || busy || !!pending.current}
-            value=""
-            onChange={(e) => {
-              if (e.target.value)
-                setMentions((v) => [...new Set([...v, e.target.value])]);
-            }}
+            onClick={() => editor.current?.open()}
           >
-            <option value="">@ Mention</option>
-            {participants.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+            @ Mention
+          </button>
           <select
             aria-label="Attach document"
             disabled={disabled || busy || !!pending.current}
