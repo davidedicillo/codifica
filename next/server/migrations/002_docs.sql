@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS documents (id TEXT PRIMARY KEY, channel_id TEXT NOT NULL REFERENCES channels(id), revision INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS document_revisions (doc_id TEXT NOT NULL REFERENCES documents(id), revision INTEGER NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, author_id TEXT NOT NULL REFERENCES participants(id), updated_at TEXT NOT NULL, PRIMARY KEY(doc_id,revision));

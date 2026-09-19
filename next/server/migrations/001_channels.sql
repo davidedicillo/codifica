@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, issuer TEXT NOT NULL, subject TEXT NOT NULL, email TEXT NOT NULL, name TEXT NOT NULL, UNIQUE(issuer, subject));
+CREATE TABLE IF NOT EXISTS sessions (hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id), csrf TEXT NOT NULL, expires REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS channels (id TEXT PRIMARY KEY, name TEXT NOT NULL, owner_id TEXT NOT NULL REFERENCES users(id), archived INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS participants (id TEXT PRIMARY KEY, channel_id TEXT NOT NULL REFERENCES channels(id), user_id TEXT REFERENCES users(id), name TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('human','agent')), provider TEXT, invited_by TEXT REFERENCES participants(id), token_hash TEXT UNIQUE, active INTEGER NOT NULL DEFAULT 1, last_active REAL NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS active_human_membership ON participants(channel_id,user_id) WHERE active=1 AND kind='human';
+CREATE TABLE IF NOT EXISTS invites (id TEXT PRIMARY KEY, channel_id TEXT NOT NULL REFERENCES channels(id), secret_hash TEXT NOT NULL UNIQUE, kind TEXT NOT NULL, email TEXT, invited_by TEXT NOT NULL REFERENCES participants(id), expires REAL NOT NULL, used INTEGER NOT NULL DEFAULT 0, revoked INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS registrations (invite_id TEXT PRIMARY KEY REFERENCES invites(id), request_id TEXT NOT NULL, digest TEXT NOT NULL, participant_id TEXT NOT NULL REFERENCES participants(id), response TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS events (sequence INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT NOT NULL REFERENCES channels(id), kind TEXT NOT NULL, data TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS channel_events ON events(channel_id,sequence);
+CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, channel_id TEXT NOT NULL REFERENCES channels(id), root_id TEXT REFERENCES messages(id), sender_id TEXT NOT NULL REFERENCES participants(id), sequence INTEGER NOT NULL UNIQUE REFERENCES events(sequence), body TEXT NOT NULL, mentions TEXT NOT NULL, created_at TEXT NOT NULL, sent_at REAL NOT NULL, doc_refs TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS channel_messages ON messages(channel_id,root_id,sequence);
+CREATE TABLE IF NOT EXISTS thread_subscriptions (participant_id TEXT NOT NULL REFERENCES participants(id), root_id TEXT NOT NULL REFERENCES messages(id), PRIMARY KEY(participant_id,root_id));
+CREATE TABLE IF NOT EXISTS deliveries (participant_id TEXT NOT NULL REFERENCES participants(id), message_id TEXT NOT NULL REFERENCES messages(id), sequence INTEGER NOT NULL, acknowledged INTEGER NOT NULL DEFAULT 0, batch_id TEXT, PRIMARY KEY(participant_id,message_id));
+CREATE INDEX IF NOT EXISTS participant_deliveries ON deliveries(participant_id,acknowledged,sequence);
+CREATE TABLE IF NOT EXISTS activity_batches (id TEXT PRIMARY KEY, participant_id TEXT NOT NULL REFERENCES participants(id), response TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS activity_state (participant_id TEXT PRIMARY KEY REFERENCES participants(id), outstanding TEXT REFERENCES activity_batches(id), last_ack TEXT);
+CREATE TABLE IF NOT EXISTS mutation_results (participant_id TEXT NOT NULL REFERENCES participants(id), operation TEXT NOT NULL, request_id TEXT NOT NULL, digest TEXT NOT NULL, response TEXT NOT NULL, PRIMARY KEY(participant_id,operation,request_id));
