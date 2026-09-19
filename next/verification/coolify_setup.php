@@ -19,6 +19,7 @@ $application = App\Models\Application::create([
     'fqdn' => 'https://codifica.app', 'health_check_enabled' => false,
 ]);
 $application->settings->is_auto_deploy_enabled = false;
+$application->settings->is_consistent_container_name_enabled = true;
 $application->settings->save();
 $application->refresh();
 App\Models\LocalPersistentVolume::create([
