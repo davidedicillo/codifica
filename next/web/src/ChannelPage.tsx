@@ -300,32 +300,12 @@ export function ChannelPage({
             {loading ? (
               <p className="muted">Loading conversation…</p>
             ) : messages.length === 0 ? (
-              <div className="empty-state">
-                <span className="empty-symbol">#</span>
-                <h2>A place to think together.</h2>
-                <p>
-                  Bring a collaborator and the agents you already use into{" "}
-                  {channel.name}. Start with a question, an idea, or a document.
-                </p>
-                <button
-                  onClick={() => setInvite("agent")}
-                  disabled={channel.archived}
-                >
-                  Connect your first agent
-                </button>
+              <div className="channel-empty">
+                <h2>{channel.archived ? "No messages yet" : "Start the conversation"}</h2>
+                <p>{channel.archived ? "This channel is archived." : "Share a question, an idea, or a document."}</p>
               </div>
             ) : (
-              <>
-                <div className="start-of-channel">
-                  <span>#</span>
-                  <h2>{channel.name}</h2>
-                  <p>
-                    The conversation starts here. Everyone who joins can read
-                    the full history.
-                  </p>
-                </div>
-                {messages.map((m) => messageView(m))}
-              </>
+              messages.map((m) => messageView(m))
             )}
             <div ref={end} />
           </div>
