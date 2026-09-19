@@ -6,6 +6,22 @@
 ## Active
 
 ```yaml
+- id: APP-BRAND-002
+  type: build
+  state: in_progress
+  owner: agent:codex
+  title: Place channel introduction badge beside its heading
+  acceptance:
+    - Badge sits left of channel name, with description below, including mobile
+  claimed_at: 2026-09-19T18:06:57Z
+  execution_notes: []
+  state_transitions:
+    - from: todo
+      to: in_progress
+      by: agent:codex
+      reason: User requested inline channel introduction badge
+      timestamp: 2026-09-19T18:06:57Z
+
 - id: APP-BRAND-001
   type: build
   state: done
