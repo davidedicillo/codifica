@@ -9,6 +9,7 @@ import {
   type DocMeta,
   type DocRef,
   ApiError,
+  imageUrl,
 } from "./api";
 import { Avatar, Markdown, Time, Notice } from "./ui";
 import { Composer } from "./Composer";
@@ -210,6 +211,7 @@ export function ChannelPage({
               key={`${ref.docId}-${ref.revision}`}
               onClick={() => openDoc(ref)}
             >
+              {ref.kind === "image" && <img className="message-image" src={imageUrl(channel.id, ref.docId, ref.revision)} alt={ref.title || "Attached image"} loading="lazy" />}
               ▤{" "}
               {ref.title ||
                 docs.find((d) => d.id === ref.docId)?.title ||
@@ -334,6 +336,8 @@ export function ChannelPage({
               userId={user.id}
               participants={participants}
               documents={docs}
+              documentsChanged={() => void refreshDocs()}
+              documentsOpening={() => setPanel(null)}
               disabled={channel.archived}
               sent={(m) => setMessages((v) => merge(v, [m]))}
             />
@@ -371,6 +375,8 @@ export function ChannelPage({
                 rootId={thread.id}
                 participants={participants}
                 documents={docs}
+                documentsChanged={() => void refreshDocs()}
+                documentsOpening={() => setPanel(null)}
                 disabled={channel.archived}
                 sent={(m) => {
                   if (m.rootMessageId === threadId.current)

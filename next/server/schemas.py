@@ -66,3 +66,8 @@ class DocCreate(Mutation):
 
 class DocPatch(DocCreate):
     expectedRevision: int = Field(ge=1)
+
+
+class DocUpload(Mutation):
+    filename: str = Field(min_length=1, max_length=200)
+    data: str = Field(max_length=6990508)

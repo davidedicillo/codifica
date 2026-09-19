@@ -16,6 +16,7 @@ iniconfig==2.3.0
 itsdangerous==2.2.0
 joserfc==1.7.5
 packaging==26.3
+Pillow==12.1.1
 pluggy==1.6.0
 pycparser==3.0
 pydantic==2.13.5

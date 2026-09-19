@@ -692,6 +692,22 @@ hr {
   min-height: 0;
   height: 100%;
 }
+.document-dialog {
+  width: min(720px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  height: min(760px, calc(100dvh - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+}
+dialog.document-dialog { padding: 0; }
+.document-dialog .docs-panel { overflow: hidden; }
+.doc-upload { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 16px; border-bottom: 1px dashed var(--line); }
+.doc-upload span { font-size: 12px; line-height: 1.5; flex: 1; min-width: 150px; color: var(--muted); }
+.docs-panel > .notice { margin: 12px 16px; }
+.document-image { display: block; max-width: 100%; height: auto; max-height: 440px; object-fit: contain; border-radius: 8px; }
+.message-image { display: block; max-width: min(260px, 100%); max-height: 220px; object-fit: contain; margin-bottom: 8px; border-radius: 6px; }
+.attach-document { margin-top: 16px; }
+.document-dialog .doc-toolbar { flex-wrap: wrap; }
 .doc-nav {
   display: flex;
   gap: 8px;

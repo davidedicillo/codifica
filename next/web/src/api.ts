@@ -15,7 +15,13 @@ export type Participant = {
   userId: string | null;
   presence: "waiting" | "recent" | "offline";
 };
-export type DocRef = {
+export type ImageMeta = {
+  kind?: "image";
+  filename?: string;
+  mediaType?: string;
+  size?: number;
+};
+export type DocRef = ImageMeta & {
   docId: string;
   revision: number;
   title?: string;
@@ -33,7 +39,7 @@ export type Message = {
   createdAt: string;
   docRefs: DocRef[];
 };
-export type Doc = {
+export type Doc = ImageMeta & {
   id: string;
   channelId: string;
   title: string;
@@ -44,7 +50,10 @@ export type Doc = {
   startLine?: number;
   endLine?: number;
 };
-export type DocMeta = Pick<Doc, "id" | "title" | "revision" | "updatedAt">;
+export type DocMeta = ImageMeta & Pick<Doc, "id" | "title" | "revision" | "updatedAt">;
+export function imageUrl(channelId: string, docId: string, revision: number, download = false) {
+  return `/api/v1/channels/${encodeURIComponent(channelId)}/docs/${encodeURIComponent(docId)}/content?revision=${revision}${download ? "&download=true" : ""}`;
+}
 export type Invite = {
   id: string;
   kind: string;

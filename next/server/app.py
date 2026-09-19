@@ -9,11 +9,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, FileResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.exceptions import HTTPException
 from authlib.integrations.starlette_client import OAuth
 from .settings import Settings
 from .db import Database
 from .common import APIError
-from . import identity, channels, messages, documents, activity, instructions, email_auth
+from . import identity, channels, messages, documents, uploads, activity, instructions, email_auth
 
 
 class SecretPathFilter(logging.Filter):
@@ -37,14 +38,15 @@ class BoundaryMiddleware:
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
         count = 0
+        limit = 8 * 1024 * 1024 if scope["path"].endswith("/docs/upload") else 2 * 1024 * 1024
 
         async def bounded_receive():
             nonlocal count
             message = await receive()
             if message["type"] == "http.request":
                 count += len(message.get("body", b""))
-                if count > 2 * 1024 * 1024:
-                    raise APIError(413, "INVALID_ARGUMENT", "Request is too large")
+                if count > limit:
+                    raise HTTPException(413, "Request is too large")
             return message
 
         async def secured_send(message):
@@ -135,7 +137,7 @@ def create_app(settings: Settings | None = None):
             status_code=400,
         )
 
-    for module in (identity, channels, messages, documents, activity, instructions, email_auth):
+    for module in (identity, channels, messages, uploads, documents, activity, instructions, email_auth):
         app.include_router(module.router, prefix="/api/v1")
 
     @app.get("/health")

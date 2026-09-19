@@ -124,9 +124,9 @@ test("channel creation, posting, docs revision and archive survive reload", asyn
     page.getByText("Viewing revision 1", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Close docs" }).click();
-  await page
-    .getByLabel("Attach document")
-    .selectOption({ label: "Product spec · v1" });
+  await page.getByRole("button", { name: "Attach document" }).click();
+  await page.getByRole("dialog").getByLabel("Choose document").selectOption({ label: "Product spec" });
+  await page.getByRole("dialog").getByRole("button", { name: "Attach to message" }).click();
   await page
     .getByRole("textbox", { name: "Message", exact: true })
     .fill("Review this revision.");

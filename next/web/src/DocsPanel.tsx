@@ -6,6 +6,7 @@ import {
   uid,
   errorText,
   ApiError,
+  imageUrl,
   type Doc,
   type DocMeta,
   type DocRef,
@@ -33,6 +34,7 @@ export function DocsPanel({
   close,
   changed,
   archived,
+  attach,
 }: {
   userId: string;
   channelId: string;
@@ -41,6 +43,7 @@ export function DocsPanel({
   close: () => void;
   changed: () => void;
   archived: boolean;
+  attach?: (doc: Doc) => void;
 }) {
   const storageKey = `codifica:draft:${userId}:${channelId}`;
   const [recovered] = useState(() => stored(storageKey));
@@ -56,6 +59,9 @@ export function DocsPanel({
     [conflict, setConflict] = useState<Doc | null>(null),
     [dirty, setDirty] = useState(!!recovered);
   const pending = useRef<Pending | null>(recovered?.pending || null);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [uploadPending, setUploadPending] = useState<{ filename: string; data: string; requestId: string } | null>(null);
+  const locked = busy || !!uploadPending;
   function persist() {
     try {
       sessionStorage.setItem(
@@ -74,15 +80,19 @@ export function DocsPanel({
   }, [doc, title, body, dirty]);
   useEffect(() => {
     const protect = (e: BeforeUnloadEvent) => {
-      if (dirty) {
+      if (dirty || uploadPending || busy) {
         e.preventDefault();
         e.returnValue = "";
       }
     };
     window.addEventListener("beforeunload", protect);
     return () => window.removeEventListener("beforeunload", protect);
-  }, [dirty]);
+  }, [dirty, uploadPending, busy]);
   function mayDiscard() {
+    if (locked) {
+      setError("Finish or retry the upload before leaving this document.");
+      return false;
+    }
     if (pending.current) {
       setError("Retry the pending save before opening another document.");
       return false;
@@ -171,6 +181,45 @@ export function DocsPanel({
     setDirty(false);
     setError("");
     setConflict(null);
+    setPreview(false);
+  }
+  async function upload(file?: File) {
+    if (archived || busy || (!file && !uploadPending)) return;
+    if (file && !mayDiscard()) return;
+    setError("");
+    setBusy(true);
+    let payload = uploadPending;
+    try {
+      if (file) {
+        if (!/\.(md|png|jpe?g|webp)$/i.test(file.name)) throw new Error("Choose a .md, PNG, JPEG or WebP file.");
+        const markdown = /\.md$/i.test(file.name);
+        if (file.size > (markdown ? 262144 : 5 * 1024 * 1024)) throw new Error(markdown ? "Markdown files must be 256 KiB or smaller." : "Images must be 5 MiB or smaller.");
+        const data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result).split(",")[1]);
+          reader.onerror = () => reject(new Error("Could not read this file."));
+          reader.onabort = () => reject(new Error("File reading was interrupted."));
+          reader.readAsDataURL(file);
+        });
+        payload = { filename: file.name, data, requestId: uid() };
+        setUploadPending(payload);
+      }
+      const d = await post<Doc>(`/channels/${channelId}/docs/upload`, payload);
+      setUploadPending(null);
+      setDoc(d);
+      setTitle(d.title);
+      setBody(d.body);
+      setEditing(false);
+      setDirty(false);
+      setConflict(null);
+      sessionStorage.removeItem(storageKey);
+      changed();
+    } catch (e) {
+      if (e instanceof ApiError && [400, 401, 403, 404, 409, 413, 422].includes(e.status)) setUploadPending(null);
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
   }
   function exportDoc() {
     const url = URL.createObjectURL(
@@ -185,19 +234,27 @@ export function DocsPanel({
   const latest =
     documents.find((d) => d.id === doc?.id)?.revision || doc?.revision || 1;
   return (
-    <section className="docs-panel">
+    <section className="docs-panel"
+      onDragOver={(e) => { if (e.dataTransfer.types.includes("Files")) e.preventDefault(); }}
+      onDrop={(e) => {
+        e.preventDefault();
+        if (archived || locked || pending.current) return;
+        if (e.dataTransfer.files.length !== 1) { setError("Drop one file at a time."); return; }
+        void upload(e.dataTransfer.files[0]);
+      }}>
       <header className="panel-header">
         <div>
           <h2>Docs</h2>
           <p>Shared context for everyone here.</p>
         </div>
-        <button className="icon-button" aria-label="Close docs" onClick={close}>
+        <button className="icon-button" aria-label="Close docs" disabled={busy} onClick={() => { if (mayDiscard()) close(); }}>
           ×
         </button>
       </header>
       <div className="doc-nav">
         <select
           aria-label="Choose document"
+          disabled={locked || !!pending.current}
           value={doc?.id || ""}
           onChange={(e) => {
             if (e.target.value) void load(e.target.value);
@@ -210,10 +267,21 @@ export function DocsPanel({
             </option>
           ))}
         </select>
-        <button onClick={newDoc} disabled={archived}>
+        <button onClick={newDoc} disabled={archived || locked || !!pending.current}>
           New doc
         </button>
       </div>
+      <div className="doc-upload">
+        <input ref={fileInput} type="file" aria-label="Upload document file" hidden
+          accept=".md,.png,.jpg,.jpeg,.webp" disabled={archived || locked || !!pending.current}
+          onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ""; if (file) void upload(file); }} />
+        <button disabled={archived || locked || !!pending.current} onClick={() => fileInput.current?.click()}>
+          {busy && uploadPending ? "Uploading…" : "Upload file"}
+        </button>
+        <span>Or drop a file here. Markdown up to 256 KiB; PNG, JPEG or WebP up to 5 MiB.</span>
+        {uploadPending && !busy && <button onClick={() => void upload()}>Retry upload</button>}
+      </div>
+      {error && <Notice>{error}</Notice>}
       {!doc && !editing && (
         <div className="empty-state small">
           <span className="empty-symbol">▤</span>
@@ -222,7 +290,7 @@ export function DocsPanel({
             Keep specifications, decisions, and notes alongside the
             conversation.
           </p>
-          <button className="primary" onClick={newDoc} disabled={archived}>
+          <button className="primary" onClick={newDoc} disabled={archived || locked || !!pending.current}>
             Create a document
           </button>
         </div>
@@ -289,15 +357,21 @@ export function DocsPanel({
                 >
                   View latest
                 </button>
-                <button onClick={exportDoc}>Export</button>
-                <button disabled={archived} onClick={() => setEditing(true)}>
-                  Edit
-                </button>
+                {doc?.kind === "image" ? (
+                  <a href={imageUrl(channelId, doc.id, doc.revision, true)} download>Download image</a>
+                ) : <>
+                  <button onClick={exportDoc}>Export</button>
+                  <button disabled={archived || locked} onClick={() => setEditing(true)}>Edit</button>
+                </>}
               </div>
-              <Markdown>{doc?.body || ""}</Markdown>
+              {doc?.kind === "image" ? (
+                <img className="document-image" src={imageUrl(channelId, doc.id, doc.revision)} alt={doc.title}
+                  onError={() => setError("Could not load this image. Check your connection and channel access, then reopen it.")} />
+              ) : <Markdown>{doc?.body || ""}</Markdown>}
+              {attach && doc && <button className="primary attach-document" disabled={archived || locked}
+                onClick={() => attach(doc)}>Attach to message</button>}
             </>
           )}
-          {error && <Notice>{error}</Notice>}
           {conflict && (
             <section className="conflict">
               <h3>Latest: revision {conflict.revision}</h3>
@@ -318,7 +392,7 @@ export function DocsPanel({
           {editing && (
             <button
               className="primary"
-              disabled={busy || !!conflict || !title.trim() || archived}
+              disabled={locked || !!conflict || !title.trim() || archived}
               onClick={() => void save()}
             >
               {busy ? "Saving…" : "Save document"}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { DocsPanel } from "./DocsPanel";
 import {
   type DocMeta,
   type DocRef,
@@ -16,6 +17,8 @@ export function Composer({
   participants,
   documents,
   sent,
+  documentsChanged,
+  documentsOpening,
   disabled = false,
 }: {
   channelId: string;
@@ -24,6 +27,8 @@ export function Composer({
   participants: Participant[];
   documents: DocMeta[];
   sent: (m: Message) => void;
+  documentsChanged: () => void;
+  documentsOpening: () => void;
   disabled?: boolean;
 }) {
   const storageKey = `codifica:message:${userId}:${channelId}:${rootId || "general"}`;
@@ -51,6 +56,11 @@ export function Composer({
   const pending = useRef<{ key: string; requestId: string } | null>(
     recovered?.pending || null,
   );
+  const [choosingDoc, setChoosingDoc] = useState(false);
+  const docDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (choosingDoc) docDialog.current?.showModal();
+  }, [choosingDoc]);
   function persist() {
     try {
       sessionStorage.setItem(
@@ -68,14 +78,14 @@ export function Composer({
     else sessionStorage.removeItem(storageKey);
   }, [body, mentions, docRefs]);
   async function send() {
-    if (!body.trim() || busy) return;
+    if ((!body.trim() && !docRefs.length) || busy || disabled) return;
     setBusy(true);
     setError("");
     const payload = {
       body: body.trim(),
       rootMessageId: rootId,
       mentions,
-      docRefs,
+      docRefs: docRefs.map(({ docId, revision, title, startLine, endLine }) => ({ docId, revision, title, startLine, endLine })),
     };
     const key = JSON.stringify(payload);
     if (pending.current && pending.current.key !== key) {
@@ -109,6 +119,7 @@ export function Composer({
     }
   }
   return (
+    <>
     <form
       className="composer"
       onSubmit={(e) => {
@@ -185,28 +196,15 @@ export function Composer({
               </option>
             ))}
           </select>
-          <select
+          <button type="button"
             aria-label="Attach document"
             disabled={disabled || busy || !!pending.current}
-            value=""
-            onChange={(e) => {
-              const d = documents.find((x) => x.id === e.target.value);
-              if (d)
-                setDocRefs((v) => [
-                  ...v.filter((x) => x.docId !== d.id),
-                  { docId: d.id, revision: d.revision, title: d.title },
-                ]);
-            }}
+            onClick={() => { documentsOpening(); setChoosingDoc(true); }}
           >
-            <option value="">＋ Document</option>
-            {documents.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.title} · v{d.revision}
-              </option>
-            ))}
-          </select>
+            ＋ Document
+          </button>
         </div>
-        <button className="primary" disabled={disabled || busy || !body.trim()}>
+        <button className="primary" disabled={disabled || busy || (!body.trim() && !docRefs.length)}>
           {busy ? "Sending…" : error ? "Retry send" : rootId ? "Reply" : "Send"}
         </button>
       </div>
@@ -216,5 +214,20 @@ export function Composer({
         </p>
       )}
     </form>
+    {choosingDoc && (
+      <dialog ref={docDialog} aria-label="Documents" className="document-dialog"
+        onCancel={(e) => { e.preventDefault(); docDialog.current?.querySelector<HTMLButtonElement>('[aria-label="Close docs"]')?.click(); }}>
+        <DocsPanel userId={userId} channelId={channelId} documents={documents}
+          archived={disabled} close={() => setChoosingDoc(false)} changed={documentsChanged}
+          attach={(doc) => {
+            setDocRefs((v) => [...v.filter((x) => x.docId !== doc.id), {
+              docId: doc.id, revision: doc.revision, title: doc.title, kind: doc.kind,
+              filename: doc.filename, mediaType: doc.mediaType, size: doc.size,
+            }]);
+            setChoosingDoc(false);
+          }} />
+      </dialog>
+    )}
+    </>
   );
 }

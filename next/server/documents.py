@@ -6,6 +6,13 @@ from .schemas import DocCreate, DocPatch
 router = APIRouter()
 
 
+def image_metadata(db, doc_id):
+    row = db.execute(
+        "SELECT filename,media_type,size FROM document_images WHERE doc_id=?", (doc_id,)
+    ).fetchone()
+    return dict(kind="image", filename=row["filename"], mediaType=row["media_type"], size=row["size"]) if row else {}
+
+
 def get_revision(db, channel, doc_id, revision=None, reference=False):
     doc = db.execute(
         "SELECT * FROM documents WHERE id=? AND channel_id=?", (doc_id, channel)
@@ -34,12 +41,15 @@ def get_revision(db, channel, doc_id, revision=None, reference=False):
         revision=row["revision"],
         authorId=row["author_id"],
         updatedAt=row["updated_at"],
+        **image_metadata(db, doc_id),
     )
 
 
 def line_range(doc, start, end):
     if start is None and end is None:
         return doc
+    if doc.get("kind") == "image":
+        reject(400, "INVALID_ARGUMENT", "Images do not have line ranges")
     lines = doc["body"].split("\n")
     start = 1 if start is None else start
     end = len(lines) if end is None else end
@@ -61,6 +71,7 @@ def resolve_refs(db, channel, refs):
         )
         selected = line_range(doc, ref.get("startLine"), ref.get("endLine"))
         resolved = dict(docId=doc["id"], revision=doc["revision"], title=doc["title"])
+        resolved.update(image_metadata(db, doc["id"]))
         if "startLine" in selected:
             resolved.update(
                 startLine=selected["startLine"], endLine=selected["endLine"]
@@ -84,6 +95,7 @@ def list_docs(channel: str, request: Request):
                     title=r["title"],
                     revision=r["revision"],
                     updatedAt=r["updated_at"],
+                    **image_metadata(db, r["id"]),
                 )
                 for r in rows
             ]
@@ -120,6 +132,8 @@ def write_doc(request, channel, payload, doc_id=None):
             reject(400, "INVALID_ARGUMENT", "Document title is required")
         if doc_id:
             current = get_revision(db, channel, doc_id)
+            if current.get("kind") == "image":
+                reject(400, "INVALID_ARGUMENT", "Images cannot be edited as Markdown")
             if current["revision"] != payload.expectedRevision:
                 reject(
                     409,

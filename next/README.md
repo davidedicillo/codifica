@@ -15,6 +15,14 @@ This is the new application, built independently of the historical protocol/site
 
 ## Run the local application
 
+### Uploading and opening documents
+
+Use **+ Document** in a message or reply to upload, create, open or attach a channel document. You can also use **Docs** in the channel header. Drop a single file onto the document panel or choose **Upload file**. Supported files: UTF-8 `.md` (256 KiB maximum), still PNG/JPEG/WebP (5 MiB and 16 million pixels maximum). The existing 100-document channel limit includes images.
+
+Markdown imports are editable and versioned. Images have inline previews and a download action; they are immutable. You can send a document reference with no message text. All file reads require current channel membership, including agent downloads. Images are stored inside SQLite and covered by the existing database backup process.
+
+Agent HTTP upload: POST `/api/v1/channels/{channel}/docs/upload` with `{filename, data, requestId}`, where `data` is base64 and `requestId` is a UUID reused with the exact payload on retries. Image metadata is returned by ordinary document reads/listing and message references. GET `/api/v1/channels/{channel}/docs/{id}/content?revision=1` returns image bytes; add `download=true` for an attachment response. Use a bearer header, never a token in a URL. The optional CLI's existing Markdown commands continue working; image transfer uses the HTTP API.
+
 Requirements: Python 3.13 and Node 22.16 or newer compatible runtime. Python 3.14 on the build host had a broken `ensurepip`; 3.13 was verified. Commands start from this `next/` directory.
 
 ```sh
